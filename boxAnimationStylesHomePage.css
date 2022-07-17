@@ -368,7 +368,7 @@
     width: 170px;
     height: 125px;
 
-    /*transform: rotate(60deg);*/
+
 
     animation: falcon1Anim 15s linear infinite forwards;
   }
@@ -376,13 +376,13 @@
   #falcon1 img:nth-of-type(1){
 
     position: absolute;
-    transform: rotate(60deg);
+
   }
 
   #falcon1 img:nth-of-type(2){
 
     position: absolute;
-    transform: rotate(60deg);
+
 
     animation: falcon1ThrustAnim 3s linear infinite forwards;
   }
@@ -391,59 +391,59 @@
   @keyframes falcon1Anim{
 
     0%{
-      transform-origin: 47% 43%;
+      transform-origin: 40% 37%;
       /*transform: translate(1vw, 1vh);*/
     }
 
     10%{
-      transform-origin: 47% 43%;
+      transform-origin: 40% 37%;
       transform: translate(2vw, -15vh);
     }
 
 
     15%{
-      transform-origin: 47% 43%;
+      transform-origin: 40% 37%;
       transform: translate(1vw, -25vh);
     }
 
 
     30%{
-      transform-origin: 47% 43%;
+      transform-origin: 40% 37%;
       transform: translate(6vw, -50vh);
     }
 
     /*initiate rotate*/
     45%{
-      transform-origin: 47% 43%;
+      transform-origin: 40% 37%;
       transform: translate(3vw, -60vh) rotate(0deg);
     }
 
     52%{
-      transform-origin: 47% 43%;
+      transform-origin: 40% 37%;
       transform: translate(2vw, -70vh) rotate(170deg);
 
     }
 
 
     60%{
-      transform-origin: 47% 43%;
+      transform-origin: 40% 37%;
       transform: translate(1vw, -80vh) rotate(170deg);
     }
 
 
     80%{
-      transform-origin: 47% 43%;
+      transform-origin: 40% 37%;
       transform: translate(3vw, -20vh) rotate(180deg);
     }
 
     90%{
-      transform-origin: 47% 43%;
+      transform-origin: 40% 37%;
       transform: translate(1.5vw, -10vh) rotate(185deg);
     }
 
 
     100%{
-      transform-origin: 47% 43%;
+      transform-origin: 40% 37%;
       transform: translate(0vw, 0vh) rotate(360deg);
     }
 
