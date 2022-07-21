@@ -1,6 +1,6 @@
 /*START OF UNIVERSAL STYLES*/
 
-@media only screen and (max-width: 600px){
+@media only screen and (max-width: 1100px){
 
   .navbar{display: flex;
         flex-direction: row;
@@ -216,7 +216,7 @@ body{background-color: black; color: white;}
 /*START OF HOME PAGE*/
 
 
-@media only screen and (max-width: 600px){
+@media only screen and (max-width: 1100px){
 
 .homepageSection{
   border: 0.3vh solid blue;
