@@ -1,10 +1,10 @@
-@import url('boxAnimationStylesHomePage.css') only screen and (min-width: 600px);
+@import url('boxAnimationStylesHomePage.css') only screen and (min-width: 800px);
 
 
 /*START OF HOME PAGE*/
 
 
-@media only screen and (max-width: 1100px){
+@media only screen and (max-width: 800px){
 
 
 
@@ -212,7 +212,7 @@
 
 
 
-@media only screen and (min-width: 1100px){
+@media only screen and (min-width: 800px){
   /*LIGHTSPEED BOX LEFT ANIMATIONS START*/
 
 
