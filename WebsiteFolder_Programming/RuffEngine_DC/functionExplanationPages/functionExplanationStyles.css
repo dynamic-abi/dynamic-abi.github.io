@@ -1,0 +1,84 @@
+.RuffEngineDC1LoreNavbar{
+
+    border: 2px solid white;
+    background-color: black;
+    display: flex;
+    flex-direction: column;
+    width: 12%;
+    position: absolute;
+    margin-top: 20%;
+
+}
+
+.RuffEngineDC1LoreNavbar a{
+    border: 2px dashed white;
+    background-color: darkred;
+    font-size: 1em;
+    margin: 5px;
+    padding: 5px;
+    color: yellow;
+    overflow: hidden;
+}
+
+
+
+
+
+/**Start of Introduction page*/
+.introductionPageArticle{
+    font-family: verdana;
+    border: 2px solid white;
+    width: 60%;
+    margin: auto;
+    margin-top: 20px;
+    padding: 10px;;
+    
+}
+
+.introductionPageArticle h1{
+    text-align: center;
+    color: blanchedalmond;
+}
+
+
+.introductionPageArticle h3{
+    text-align: center;
+    color: red;
+}
+
+
+
+
+/**End of Introduction page*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**Start of update CamHats page*/
+.updateCamHatsArticle{
+
+    font-family: helvetica;
+    background-color: darkred;
+    width: 70%;
+    margin: auto;
+
+}
+
+
+.updateCamHatsArticle section{
+    border: 2px dashed white;
+    margin-bottom: 20px;
+    padding: 5px;
+}
+
+/**End of update CamHats page*/

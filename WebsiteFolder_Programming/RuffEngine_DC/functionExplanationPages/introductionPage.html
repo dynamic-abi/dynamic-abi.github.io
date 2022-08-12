@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <link rel="stylesheet" type="text/css" href="universalStyles.css">
+    <link rel="stylesheet" href="functionExplanationStyles.css">
+
+
+    <meta charset="utf-8">
+    <title>Multiple Panel Program</title>
+</head>
+
+<body>
+
+    <div class="mainLogo">
+        <img src="images/mainLogo2.png" alt="Logo" width="500px" height="140px"></img>
+    </div>
+
+    <nav class="navbar">
+        <a href="../../../index.html">Home</a>
+        <a href="../../../animationPage.html">CGI Works</a>
+        <a href="../../../musicPage.html">Music</a>
+        <a href="../../../programmingwork.html">Programming</a>
+        <a href="../../../creativeWriting.html">Writing</a>
+    </nav>
+
+
+    <nav class="RuffEngineDC1LoreNavbar">
+
+        <a href="introductionPage.html">Ruff Engine Lore: Home</a>
+        <a href="updateCamHatsPage.html">Ruff Engine Lore: UpdateCamHats</a>
+        <a href="calculateCamScreenDVPage.html">Ruff Engine Lore: CalculateCamScreenDV</a>
+
+    </nav>
+
+
+
+    <article class="introductionPageArticle">
+
+        <h1>Ruff Engine DC-1 Introduction</h1>
+
+        <p>
+            Welcome! This is a brief introductory page to illustrate the base concepts behind Ruff Engine DC-1 and my motivation to
+            create it. DC Stands for Dynamic Camera.
+        </p>
+
+        <p>
+            You are right now in a secret underground dungeon of my website. I admire your bravery for even entering this place.
+             As you can see, there is a special navigation menu on the left that is not accessible within the 
+            main level. This is a special inner branch of my website that lists out the lore and theory behind Ruff Engine DC-1.
+        </p>
+
+        <p>
+            This is my own personal implementation of a 3D engine (Concept wise and code wise). I've created a set of geometric
+            mechanics that are strung together to simulate the experience of a camera moving through a three dimensional world.
+        </p>
+
+        <p>
+            I wanted to get as intimate and barebones as possible with the math. After watching a few 3D Engine tutorials online, I
+            noticed that most of them involved using transformation matrices and other math functions as black boxes - Where you
+            understood what their function was……to manipulate values based on parameters we feed into it. But it was no fun to use
+            something if you didn't know how it worked and what exactly it did underneath.
+        </p>
+
+        <p>
+            So instead, I did some revision of vectors and linear transformation. I watched the 'Essence Of Linear Algebra'
+            series by 3Blue1Brown as
+            well as some Robotics lectures by Angela Soddman, which all explained a deep intuition level understanding of
+            vectors,
+            projection and what exactly it means to rotate vectors.
+        </p>
+
+
+    </article>
+
+    <article class="introductionPageArticle">
+
+        <h1>Process</h1>
+
+    
+
+        <p>
+            Using those basic concepts, I was able to build Ruff Engine SC-1 (Which was just a static camera showing vectors
+            rotating about an axis)(). From there, I felt like I knew enough to evolve that into something that will simulate movement
+            (from the camera's point of view). And so it began. My main highlight here is the conceptual blueprint design of the
+            engine (which can be applied to any programming language). I have created an interactive blueprint page that gives an
+            overview of the program and has nested pages within that main blueprint that detail out every function and its workings.
+            This includes steps, sequences and diagrams alongside them. For the full, detailed description and ideas behind each function ,
+            please visit the pages linked in the table below. Note: The blueprint nested pages will also contain a direct link to the page for each
+            function along with the conscise explanation provided within those nested pages.
+        </p>
+
+
+        <p>
+            My program does not "abstractify" any of the logic behind the functions. At no point will you feel like you're just
+            dealing with the formalities of math and not knowing what's truly going on. You will be able to follow and track all the
+            action in a way that feels as natural as eating Pi.
+        </p>
+
+
+        <p>
+            I also approach the concept of camera rotations (specifically combining camera rotations) in a my own unique way. No use
+            of matrices. Instead I break down the diagram into components and individually operate on them in sequence. And I detail
+            out the logic behind how I derived that sequence.
+        </p>
+
+    </article>
+
+
+
+    <article class="introductionPageArticle">
+        
+        <h1>Base Knowledge</h1>
+
+
+        <p>
+            If you know your basic trigonometry (SOH CAH TOA), and a basic intuitive understanding of vectors, you're good to go! 
+        </p>
+
+        <p>
+            I highly recommend watching 3Blue1Brown's 'Essence Of Linear Algebra' series on Youtube. It's a short series of lectures that explain 
+            the intuition behind linear transformations.
+        </p>
+
+        <br>
+        <h3>The concept of projection</h3>
+
+        <h4>A Top-Down View Oriented Case Example: </h4>
+
+        <p>For the sake of simplicity, let's consider the 3D world, looking at it from the Top.</p>
+
+        <p>Pretend you already have a camera existing within a 3D environment that is directly positioned behind a translucent cube (with its edges visible) and 
+            looking straight ahead at it.
+        </p>
+
+        <img src="" alt="">
+
+
+        <p>Now pretend that you orbit this camera leftwards around this cube. If you imagine what the camera would be seeing, you can imagine 
+            that as we orbit, the left side of the cube now comes into our camera's view. 
+        </p>
+
+
+        <p>How would we program this phenomenon? Where different parts of the cube become visible based on which angle we are looking at it from?  </p>
+
+        <img src="images/intro1.png" style="width: 49%;" alt="">
+        <img src="images/intro2.png" style="width: 49%;" alt="">
+
+        <p>By projection. Pretend that light is shooting from the points. But the only rays we're concerned about is the light that is directly hitting our 
+            camera screen at a perpendicular angle.
+        </p>
+
+
+        <p>
+            This is a way of the camera making sense of the world around it and seeing things from its perspective. Notice how in the first frame,
+            it appears as though there are 2 projection rays. There are actually 4 points, but since the camera is perfectly aligned with it, we are getting
+            what appears to be 2 rays hitting the screen
+        </p>
+
+        <p>
+            And then when we orbit around it, notice how all 4 points are now coming into view and 4 rays are hitting the screen.
+        </p>
+
+        <p>
+            Also notice the gap between the rays in the first frame. You can see how as we orbit around, this gap would get smaller (as well as additional gaps appearing since more of the points are now visible).
+            These are the transformations that create that illusion of a 3D object moving around in space.
+        </p>
+
+        <p>
+            In order to drive all the points(vectors) in our world through these transformations, we need to a dynamic set of unit vectors that rotate about an axis. 
+            All of the points(vectors) in our 3D world should be oriented with these. As the camera turns, these unit vectors simply rotate along with the camera. And all the vectors
+            in our scene then get redrawn and oriented with the new position of these unit vectors.
+
+            I have called these unit vectors the 'CamHats'. In Ruff Engine DC-1, we have 2 sets of unit vectors. The CamHats (which are mobile) and the WorldHats (which are fixed).
+        </p>
+
+
+
+    </article>
+
+
+
+
+    <article class="introductionPageArticle">
+    
+        <h1>The CamHats</h1>
+    
+    
+        <p>
+            The CamHats are the set of unit vectors (I^, J^ and K^) that are linked to the camera's orientation in the world.
+            The angle at which the camera is facing (The Rotation Orientation (RO)) will decide the angle of the CamHats. Think of
+            the CamHats
+            as a well oiled mechanical pulley system that moves in conjunction with the camera's twists and turns. Whatever
+            direction the camera
+            turns in, it will always face the camera. Note that the position of it's origin however, is fixed at the same spot as
+            the origin of the world.
+            It's only it's rotation that keeps changing.
+
+            <br>
+            
+            Note that the camera's rotation orientation is on 2 levels: <br>
+            - Horizontal rotation orientation (HorzRO or HRO) which tracks rotation on XZ plane <br>
+            - Vertical rotation (VertRO or VRO) which tracks rotations on the YZ plane
+            
+            The CamHats will be aligned to both of these orientations.
+        </p>
+
+
+        <p>
+
+            Purpose: It is necessary to have two different sets of unit vectors existing within the 3D world. The other set of unit
+            vectors (apart from the CamHats) is called
+            the WorldHats (Which has its own I^, J^ and K^). These WorldHat unit vectors are static. They do not move with the
+            camera. The discrepency between
+            the CamHats and The WorldHats is what is responsible for creating the projection of the world onto the camera's screen.
+            
+            <br>
+            
+            If you place the camera with a 0 HRO and 0 VRO configuration, the CamHats will be directly in line with the WorldHats.
+            The cam will see the world directly
+            on one axis. When you start to rotated the camera, all of the points in the world will start to rotate and shift.
+        </p>
+
+
+        <p>
+
+            Follow the sequence of diagrams below to get a visual understanding. <br>
+        </p>
+
+        <p>The two images below show the Worldhats from the top view (So just I^ and K^). Now lets draw a vector oriented with this unit vector system (represented by the pink line)</p>
+
+        <img src="images/camHatsIntro1.png" style="width: 39%;" alt="">
+        <img src="images/camHatsIntro2.png" style="width: 39%;" alt="">
+
+
+        <p>Now lets introduce a new set of unit vectors (The CamHats) over here. They start in the same position as the WorldHats but they rotate around (using the origin as the axis)</p>
+        <p>The angle between the base frame (represented by the WorldHats) and the current orientation of the CamHats is shown by the red angle line.</p>
+
+        <p>Now what if we orient that original vector (the pink line) with these new unit vectors (The CamHats)?</p>
+        <p>That would be a rotation of that vector using the origin as the axis of rotation. The vector would displace on the X-axis and Z-axis in this case. The original coordinates of the vector and the rotation angle can be used to derive the new coordinates of the 
+            vector after it has undergone this rotation.
+        </p>
+
+        
+
+        <img src="images/camHatsIntro3.png" style="width: 39%;" alt="">
+        <img src="images/camHatsIntro4.png" style="width: 39%;" alt="">
+
+
+        <p>This is the basic idea behind the camHats. To track the rotation orientation of the camera so that it knows by what angle it has to transform all the vectors in the world based on where the camera is looking. Note how 
+            the camera's looking direction is aligned with the angle of the CamHats. And instead of just rotating one vectorm, we are rotating every vector in the 3D world (which is equivalent to
+                rotating the entire world).
+            
+        </p>
+
+
+        <p>
+            Note that what we are looking at here is just the top view. We have to track the rotation of the CamHats horizontally AND vertically! Combining these rotations is really complicated, as you'll see later. 
+            See the updateCamHats page to understand this issue better.
+        </p>
+            
+    </article>
+
+
+
+    <article class="introductionPageArticle">
+
+        <h1>Simulating Camera Movements In Reference To The World</h1>
+
+        <p>
+            In Ruff Engine DC-1, we are using the X and Y coordinate of all the points in the world to decide where to draw it on
+            the Cam's POV. So if you really think about it……….the camera is still static in a way. The camera screen is directly
+            aligned with the XY Plane of our three dimensional grid. The X and Y coordinate axis do not change with the camera's
+            orientation. These are fixed in our 3D graph
+        </p>
+
+
+        <p>
+            The movements of the camera that you see on the Top view and Side view are pseudo representations of what is happening.
+            It is up to us to manipulate the world to recreate those effects. These is where inverse mechanics come into play. If
+            you want to simulate a right turn, you will have to rotate all the vectors of the world, leftwards (since our camera is
+            fixed).
+        </p>
+
+        <p>
+            I know this seems counter intuitive to everything that was described above. But we are still applying the same principles.
+            We just have to run all our transformations through this "inversifying channel" after we orient all the elements based on our diagrams.
+            Think of it just as an additional compensator function that is just added to our program after we work out all the main stuff.
+        </p>
+
+    </article>
+
+
+    
+
+
+</body>
+
+
+</html>

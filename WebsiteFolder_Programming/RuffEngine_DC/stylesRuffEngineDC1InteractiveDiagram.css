@@ -1,0 +1,314 @@
+
+
+
+
+
+
+
+#mapDiv {
+
+    width: 1182px;
+    height: 936px;
+    border: 2px solid red;
+    ;
+
+
+    background-image: url("interactiveDiagramImages/map.png");
+    background-size: cover;
+
+    margin-left: 200px;
+    
+}
+
+
+
+#rotateCamFunctionsDiv{
+    border: 2px solid red;
+    width: 180px;
+    height: 85px;
+    margin-left: 58px;
+    margin-top: 30px;
+    border-radius: 15px;   
+}
+
+    #rotateCamFunctionsDiv button{
+        font-size: 0.8em;
+        color: white;
+        border: 2px solid red;
+        background-color: black;
+        margin-left: 18px;
+        margin-top: 23px;
+        height: 40px;
+    }
+
+
+
+#translateCamFunctionsDiv{
+    border: 2px solid blue;
+    width: 180px;
+    height: 85px;
+    margin-left: 80px;
+    margin-top: 49px;
+    border-radius: 15px;
+}
+
+    #translateCamFunctionsDiv button{
+        font-size: 0.8em;
+        color: white;
+        border: 2px solid blue;
+        background-color: black;
+        margin-left: 10px;
+        margin-top: 23px;
+        height: 40px;
+
+    }
+
+
+#CamElementDiv_Parent{
+
+    border: 2px dotted white;
+    width: 325px;
+    height: 378px;
+    margin-left: 190px;
+    margin-top: 22px;
+    border-radius: 50px;
+
+}
+
+
+    #CamScreenDVDiv_Child{
+        border: 2px solid white;
+        width: 85px;
+        height: 64px;
+        margin-left: 70px;
+        margin-top: 55px;   
+    }
+
+    #CamScreenDVDiv_Child h5{
+        font-size: 0.7em;
+        border: 2px solid white;
+        background-color: black;
+        text-align: center;
+        margin-left: -2px;
+        margin-top: -2px;
+        margin-bottom: -27px;
+        height: 20px;
+        width: 85px;
+    }
+
+    #CamScreenDVDiv_Child h6{
+        font-size: 0.7em;
+        border: 2px solid white;
+        margin-left: -2px;
+        margin-bottom: -28px;
+        background-color: black;
+        height: 18px;
+        width: 85px;
+        text-align: center;
+        
+    }
+
+
+    #UPDATECamScreenDVDiv_Child{
+        border: 2px solid yellow;
+        width: 175px;
+        height: 55px;
+        margin-top: 34px;
+        margin-left: 28px;
+        border-radius: 10px;
+    }
+
+    #UPDATECamScreenDVDiv_Child button{
+        border: 1px solid yellow;
+        border-left: 3px solid yellow;
+        border-right: 3px solid yellow;
+        background-color: black;
+        color: white;
+        font-size: 0.6em;
+        margin-left: 15px;
+        
+
+        width:145px;
+        height: 57px;
+    }
+
+
+    #UPDATECamScreenDVDiv_Child article{
+        position:absolute;
+        border: 2px solid red;
+        margin-top: -440px;
+        margin-left: -150px;
+        width: 500px;
+        height: 435px;
+        visibility: hidden;
+    }
+
+
+    #UPDATECamScreenDVDiv_Child article iframe{
+        border: 2px solid white;
+        width: 497px;
+        height: 431px;
+    }
+
+    #UPDATECamScreenDVDiv_Child article button{
+        position: absolute;
+        border: 2px solid red;
+        width: 35px;
+        height: 25px;
+        
+    }
+
+         #UPDATECamScreenDVDiv_Child article button:nth-of-type(1){
+            margin-top: 1px;
+            margin-left: 445px;
+         }
+         #UPDATECamScreenDVDiv_Child article button:nth-of-type(2){
+            margin-left: 0px;
+            margin-top: 35px;
+            margin-left: 445px;
+            font-size: 1.1em;
+           
+         }
+         #UPDATECamScreenDVDiv_Child article button:nth-of-type(3) {
+            margin-left: 0px;
+          
+            margin-top: 60px;
+            margin-left: 445px;
+            font-size: 1.2em;
+         }
+
+
+
+
+    #CamCoordsDiv_Child{
+        border: 2px solid white;
+        width: 64px;
+        height: 50px;
+        margin-left: 16px;
+        margin-top: 58px;
+    }
+
+    #CamCoordsDiv_Child button{
+        border: 2px solid white;
+        background-color: black;
+        color: white;
+        font-size: 0.6em;
+        width: 65px;
+        height: 50px;
+    }
+
+    #CamRODiv_Child{
+        border: 2px solid white;
+        width: 56px;
+        height: 64px;
+        margin-left: 128px;
+        margin-top: -62px;
+    }
+
+    #CamRODiv_Child button{
+        border: 2px solid white;
+        background-color: black;
+        color: white;
+        font-size: 0.6em;
+        width: 58px;
+        height: 65px;
+        
+
+    }
+
+
+
+
+#ConstantsDiv_Parent{
+    border: 2px solid orange;
+    width: 283px;
+    height: 167px;
+    margin-top: 72px;
+    margin-left: 170px;
+    border-radius: 25px;
+}
+
+
+#renderCamVDiv{
+    border: 2px solid green;
+
+    width: 132px;
+    height: 85px;
+
+    margin-top: -765px;
+    margin-left: 685px;
+
+    border-radius: 15px;
+
+    
+}
+
+#trianglesArrDiv{
+    border: 2px solid orange;
+    width: 100px;
+    height: 45px;
+    margin-left: 933px;
+    margin-top: 70px;
+}
+
+
+#camHatsDiv{
+    border: 2px solid white;
+    width: 100px;
+    height: 85px;
+    margin-left: 612px;
+    margin-top: 62px;
+}
+
+#worldHatsDiv{
+    border: 2px solid white;
+    width: 100px;
+    height: 85px;
+    margin-left: 780px;
+    margin-top: -90px;
+}
+
+#UPDATECamHatsDiv{
+    border: 2px solid yellow;
+    width: 165px;
+    height: 78px;
+    margin-left: 547px;
+    margin-top: 94px;
+    border-radius: 12px;
+}
+    
+#UPDATECamHatsDiv article{
+
+    position: absolute;
+    border: 2px solid red;
+    margin-top: -440px;
+    margin-left: -150px;
+    width: 500px;
+    height: 435px;
+    visibility: hidden;
+    overflow-y:scroll;
+}
+
+#UPDATECamHatsDiv article img{
+
+    width: 500px;
+
+   
+}
+
+
+
+
+
+
+
+#maintenenceFunctions_Parent{
+    border: 2px solid white;
+    width: 320px;
+    height: 200px;
+    margin-top: 15px;
+    margin-left: 770px;
+
+}
+
+

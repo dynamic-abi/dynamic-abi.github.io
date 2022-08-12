@@ -9,6 +9,17 @@ var camIHat, camJHat, camKHat;
 
 
 
+//hybridMatrix is a 3x3 matrix that gets updated as each camera rotation is applied. Multiply the current hybridMatrix with the current camera rotation.
+//In code, its an array of 3 sub arrays. Each sub array is I^, J^ and K^ respectively. Each number in that sub array is their X, Y, and Z coordinate respectively
+var hybridMatrix;
+//hybridMatrixStack is a stack structure that keeps track of all the rotation transformations that the camera undergoes. Every time a new rotation is done, the relevant rotation matrix is added to the stack
+var hybridMatrixStack;
+
+//an array (for now). each value in the array will be a string that represents the rotation Horz or Vert
+var rotMatrixStack;
+var rotMatrixStackIndex;
+
+
 var gridRows = 10;
 var gridColumns = 10;
 
@@ -18,6 +29,9 @@ var camCoords;
 
 //the ROCompensatorHorz compensates for angle differences between origin and cam horizontally.
 var camXPlaneToOriginAngle;
+
+var camYPlaneToOriginAngle;
+
 
 //To do watermelon : make sure you factor in camROCompensatorVert for vertical angle differences.
 var camROCompensatorVert;
@@ -39,6 +53,14 @@ var projectionRO
 var camScreenDV;
 
 
+//an object that holds multiple values related to the camViewScope. [0]:scopeNormalsLength(the central pole that determines how long the scope should be)
+//[1]:the horzScopeAngle. This value decides how many radians should span from the scopeNormals to the left or right side of the scope (horizontally)
+//[2]: the vertScopeAngle. This value decides how many radians should span from the scopeNormals to the up or down side of the scope.
+var camViewScope;
+
+//this object holds the dynamically changing coordinates of the camViewScope.[0]:scopeNormalsEndPoint(x,y,z)
+//[1]: topLeftPoint(x, y, z), [2]: bottomLeftPoint(x, y, z), [3]: bottomrightPoint(x, y, z), [4]: toprightPoint(x, y, z)
+var camViewScopeCoords;
 
 
 
@@ -52,10 +74,63 @@ var CamVCanvas = document.getElementById('CamCanvas');
 var CamVCTX = CamVCanvas.getContext('2d');
 
 
+//SV Canvas
+var SVcanvas = document.getElementById('SVCanvas');
+var SVCTX = SVcanvas.getContext('2d');
+
 
 //Toggle switches
 var projectionRaysTVToggleSwitch = false;
 var projectionRaysTVStrongToggleSwitch = false;
+var projectionRaysTrianglesTVStrongToggleSwitch = false;
+
+var projectionRaysSVStrongToggleSwitch = false;
+var projectionRaysTrianglesSVStrongToggleSwitch = false;
+
+var toggleSwitch_lens_CCToProjSpot = false;
+
+
+var joystickActiveSwitch = false;
+
+
+
+//will create a unit cube where all the triangles have the same points
+//to be used for testing purposes
+//modifed: it will create a really small cube with 4 distinct faces but with an extremely small size so that its visible on the screen.
+function createMicroUnitCube(ox, oy, oz){
+  let arrOfTriangles = [];
+
+  let frontface1 = [[ox, oy, oz], [ox+0.1, oy, oz], [ox+0.1, oy+0.1, oz]];
+  let frontface2 = [[ox, oy, oz], [ox+0.1, oy+0.1, oz], [ox, oy+0.1, oz]];
+
+  //east face
+  let eastface1 = [[ox+0.1, oy, oz], [ox+0.1, oy, oz+0.1], [ox+0.1, oy+0.1, oz+0.1]];
+  let eastface2 = [[ox+0.1, oy, oz], [ox+0.1, oy+0.1, oz+0.1], [ox+0.1, oy+0.1, oz]];
+
+
+  //back face
+  let backface1 = [[ox+0.1, oy, oz+0.1], [ox, oy, oz+0.1], [ox+0.1, oy+0.1, oz+0.1]];
+  let backface2 = [[ox, oy, oz+0.1], [ox, oy+0.1, oz+0.1], [ox+0.1, oy+0.1, oz+0.1]];
+
+  //west face
+  let westface1 = [[ox, oy, oz+0.1], [ox, oy+0.1, oz], [ox, oy+0.1, oz+0.1]];
+  let westface2 = [[ox, oy, oz+0.1], [ox, oy, oz], [ox, oy+0.1, oz]];
+
+  arrOfTriangles[0] = frontface1;
+  arrOfTriangles[1] = frontface2;
+  arrOfTriangles[2] = eastface1;
+  arrOfTriangles[3] = eastface2;
+
+  arrOfTriangles[4] = backface1;
+  arrOfTriangles[5] = backface2;
+
+  arrOfTriangles[6] = westface1;
+  arrOfTriangles[7] = westface2;
+
+  return arrOfTriangles;
+
+}
+
 
 
 
@@ -67,7 +142,12 @@ function initializeScene(){
   camCoords = [0, 0, -3];
   camRO = 0;
 
+  //camViewScope[0]:ScopeNormalsLength(the center pole), [1]: HorzScopeAngle, [2]: VertScopeAngle
+  camViewScope = [4, 0.3, 0.3];
+  //camViewScopeCoords = []
 
+
+  rotMatrixStackIndex = 0;
 
   camROVert = 0;
   projectionRO = 0;
@@ -80,25 +160,96 @@ function initializeScene(){
   camJHat = [0, 1, 0];
   camKHat = [0, 0, 1];
 
+  //hybridMatrix = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
+  rotMatrixStack=["null"];
+
   camScreenDV = [0, 0];
+
 
   pointsArr = [[1, 1, 1], [2, 1, 1], [2, 2, 1], [1, 2, 1],
                [1, 1, 2], [2, 1, 2], [2, 2, 2], [1, 2, 2]
 
   ];
 
-  //points must be in counter clockwise order.
-  trianglesArr = [
-                  //front face
-                  [[1, 1, 1], [2, 1, 1], [2, 2, 1]],
-                  [[1, 1, 1], [2, 2, 1], [1, 2, 1]],
 
-                   //eastside face
-                  [[2, 1, 1], [2, 1, 2], [2, 2, 2]],
-                  [[2, 1, 1], [2, 2, 2], [2, 2, 1]]
+  let cubeArr = [];
+  //cubeArr[0] = createMicroUnitCube(1, 1, 1);
+  cubeArr[0] = createUnitCube(1, 1, 1);
+  cubeArr[1] = createUnitCube(3, 3, 3);
+  cubeArr[2] = createUnitCube(-2, 0, 1);
+  cubeArr[3] = createUnitCube(4, 0, -3);
+
+  let triangleStream = cubeArrToTriangleArrConverter(cubeArr);
+
+  trianglesArr = triangleStream;
 
 
-                  ];
+ // trianglesArr = createUnitCube(1, 1, 1);
+
+
+}
+
+//will take in an array of cubes and convert them into one stream of triangles (an array of triangles)
+function cubeArrToTriangleArrConverter(cubeArr){
+
+  let streamOfTriangles = [];
+
+  for(let c=0; c<cubeArr.length; c=c+1){
+
+    for(let t=0; t<cubeArr[c].length; t=t+1){
+      streamOfTriangles.push(cubeArr[c][t]);
+    }
+  }
+  return streamOfTriangles;
+
+}
+
+
+
+
+
+
+//will create a unit cube (a cube of 1 unit dimensions) at the x,y,z coordinates specified. Will extend from -x to +x. So if you
+//specify the origin at 1, it will go from 1 to 2. Will return an array of 12 triangles
+function createUnitCube(ox, oy, oz){
+
+  let arrOfTriangles = [];
+
+  //front face
+  let frontface1 = [[ox, oy, oz], [ox+1, oy, oz], [ox+1, oy+1, oz]];
+  let frontface2 = [[ox, oy, oz], [ox+1, oy+1, oz], [ox, oy+1, oz]];
+
+  //east face
+  let eastface1 = [[ox+1, oy, oz], [ox+1, oy, oz+1], [ox+1, oy+1, oz+1]];
+  let eastface2 = [[ox+1, oy, oz], [ox+1, oy+1, oz+1], [ox+1, oy+1, oz]];
+
+
+  //back face
+  let backface1 = [[ox+1, oy, oz+1], [ox, oy, oz+1], [ox+1, oy+1, oz+1]];
+  let backface2 = [[ox, oy, oz+1], [ox, oy+1, oz+1], [ox+1, oy+1, oz+1]];
+
+  //west face
+  let westface1 = [[ox, oy, oz+1], [ox, oy+1, oz], [ox, oy+1, oz+1]];
+  let westface2 = [[ox, oy, oz+1], [ox, oy, oz], [ox, oy+1, oz]];
+
+
+
+
+  arrOfTriangles[0] = frontface1;
+  arrOfTriangles[1] = frontface2;
+  arrOfTriangles[2] = eastface1;
+  arrOfTriangles[3] = eastface2;
+
+  arrOfTriangles[4] = backface1;
+  arrOfTriangles[5] = backface2;
+
+  arrOfTriangles[6] = westface1;
+  arrOfTriangles[7] = westface2;
+
+
+
+
+  return arrOfTriangles;
 
 
 }
@@ -117,7 +268,7 @@ function render(){
 
   renderCamV();
 
- // renderSV();
+  renderSV();
 
   displayText();
 
@@ -141,6 +292,11 @@ function renderTV(){
   drawProjectionRaysTV();
 
   drawProjectionRaysTVStrong();
+
+  drawProjectionRaysTrianglesTVStrong();
+
+
+  drawTrianglesTV();
 
 
   displayText();
@@ -180,11 +336,49 @@ function renderCamV(){
   drawCamHatsCamV();
 
 
+  drawColorRefCirclesCamV();
+
+
 
 }
 
 
+function renderSV(){
 
+  drawGridSV();
+
+  drawCamSV();
+
+  drawWorldHatsSV();
+
+  drawCamHatsSV();
+
+  drawCamDistToOriginSV();
+
+
+  drawCamNormalsSV();
+
+  drawProjectionRaysSVStrong();
+
+  drawProjectionRaysTrianglesSVStrong();
+
+
+
+  /**
+
+  drawProjectionRaysSV();
+
+  drawProjectionRaysSVStrong();
+
+  drawProjectionRaysTrianglesSVStrong();
+
+  drawTrianglesSV();
+   */
+
+  //displayText();
+
+
+}
 
 
 
@@ -281,8 +475,8 @@ function drawProjectionRaysTV(){
 
     console.log("raylength: " + rayLength);
     //now find the landing point of the ray
-    let landXDisp = rayLength * Math.cos((Math.PI/2)-camRO);
-    let landYDisp = rayLength * Math.sin((Math.PI/2)-camRO);
+    let landXDisp = rayLength * Math.cos((Math.PI/2)+camRO);
+    let landYDisp = rayLength * Math.sin((Math.PI/2)+camRO);
 
     console.log("landXDisp:" + landXDisp);
     console.log("landYDisp: " + landYDisp);
@@ -299,6 +493,33 @@ function drawProjectionRaysTV(){
 
 }
 
+
+function drawProjectionRaysTrianglesTVStrong(){
+
+  if(projectionRaysTrianglesTVStrongToggleSwitch != true){
+
+    drawProjectionRaysTrianglesTVRayShootMethod();
+
+
+  }
+
+  function drawProjectionRaysTrianglesTVRayShootMethod(){
+
+    for(let t=0; t<trianglesArr.length; t=t+1){
+
+      for(let p=0; p<trianglesArr[t].length; p=p+1){
+
+        shootRay(TVcanvas, TVCTX, trianglesArr[t][p][0], trianglesArr[t][p][2], -(camRO)+(Math.PI), 10, "Red");
+
+      }
+
+    }
+
+  }
+
+}
+
+
 //will draw projection rays at an "infinite" length
 function drawProjectionRaysTVStrong(){
 
@@ -306,9 +527,22 @@ function drawProjectionRaysTVStrong(){
 
     drawProjectionRaysWorldHatsTVRayShootMethod();
 
+    drawProjectionRaysCamHatsTVRayShootMethod();
+
+
+
+
   }
 
 
+
+  function drawProjectionRaysCamHatsTVRayShootMethod(){
+    shootRay(TVcanvas, TVCTX, camIHat[0], camIHat[2], camRO+(Math.PI), 10, "Blue");
+
+    shootRay(TVcanvas, TVCTX, camJHat[0], camJHat[2], camRO+(Math.PI), 10, "Orange");
+
+    shootRay(TVcanvas, TVCTX, camKHat[0], camKHat[2], camRO+(Math.PI), 10, "Yellow");
+  }
 
   function drawProjectionRaysWorldHatsTVRayShootMethod(){
 
@@ -328,8 +562,38 @@ function drawProjectionRaysTVStrong(){
 }
 //end of TV toggle functions
 
+//will shoot a ray from the CC (camera center) towards the projection spot (where the ray lands on the screen)
+function toggleLens_CCToProjSpot(){
+  if(toggleSwitch_lens_CCToProjSpot==false){
+    toggleSwitch_lens_CCToProjSpot = true;
+    document.getElementById("DistCCProjSpotXDispRedLight").style.backgroundColor = "Red";
+  }
+
+  else{
+    toggleSwitch_lens_CCToProjSpot = false;
+    document.getElementById("DistCCProjSpotXDispRedLight").style.backgroundColor = "Transparent";
+  }
+
+}
+
+
+
+
+
 
 //start of toggle switches
+function toggleProjectionRaysSVStrong(){
+  if(projectionRaysSVStrongToggleSwitch==false){
+    projectionRaysSVStrongToggleSwitch = true;
+  }
+
+  else{
+    projectionRaysSVStrongToggleSwitch = false;
+  }
+
+}
+
+
 function toggleProjectionRaysTV(){
   if(projectionRaysTVToggleSwitch==false) {
     projectionRaysTVToggleSwitch = true;
@@ -348,6 +612,20 @@ function toggleProjectionRaysTVStrong(){
 
   else{
     projectionRaysTVStrongToggleSwitch = false;
+  }
+
+
+}
+
+
+
+function toggleProjectionRaysTrianglesTVStrong(){
+  if(projectionRaysTrianglesTVStrongToggleSwitch==false){
+    projectionRaysTrianglesTVStrongToggleSwitch = true;
+  }
+
+  else{
+    projectionRaysTrianglesTVStrongToggleSwitch = false;
   }
 
 
@@ -429,7 +707,7 @@ function drawCamTV(){
   TVCTX.moveTo(convertedCoordsCamOrigin[0], convertedCoordsCamOrigin[1]);
 
 
-  let convertedCoordsDestLeftSide = getCanvasCoordsOfActualCoords(camCoords[0]+(Math.cos(camRO)*(camWidth/2)), camCoords[2]-(Math.sin(camRO)*(camWidth/2)));
+  let convertedCoordsDestLeftSide = getCanvasCoordsOfActualCoords(camCoords[0]+(Math.cos(camRO)*(camWidth/2)), camCoords[2]+(Math.sin(camRO)*(camWidth/2)));
 
   //now use the camRO to find out where the ends of the should be.
   //x = cos(RO) * (camWidth/2);
@@ -452,7 +730,7 @@ function drawCamTV(){
   TVCTX.moveTo(convertedCoordsCamOrigin[0], convertedCoordsCamOrigin[1]);
 
 
-  let convertedCoordsDestRightSide = getCanvasCoordsOfActualCoords((camCoords[0]-(Math.cos(camRO)*(camWidth/2))), (camCoords[2]+(Math.sin(camRO)*(camWidth/2))));
+  let convertedCoordsDestRightSide = getCanvasCoordsOfActualCoords((camCoords[0]-(Math.cos(camRO)*(camWidth/2))), (camCoords[2]-(Math.sin(camRO)*(camWidth/2))));
 
   TVCTX.lineTo(convertedCoordsDestRightSide[0], convertedCoordsDestRightSide[1]);
   TVCTX.stroke();
@@ -462,7 +740,7 @@ function drawCamTV(){
   TVCTX.beginPath();
   TVCTX.moveTo(convertedCoordsCamOrigin[0], convertedCoordsCamOrigin[1]);
 
-  let convertedCoordsCenterPole = getCanvasCoordsOfActualCoords(camCoords[0]+(Math.sin(camRO)), camCoords[2]+(Math.cos(camRO)))
+  let convertedCoordsCenterPole = getCanvasCoordsOfActualCoords(camCoords[0]-(Math.sin(camRO)), camCoords[2]+(Math.cos(camRO)));
 
   TVCTX.lineTo(convertedCoordsCenterPole[0], convertedCoordsCenterPole[1]);
   TVCTX.stroke();
@@ -508,7 +786,7 @@ function drawCamTV(){
 
       //increment formal coords
       currGridMarkerX = currGridMarkerX + rightSideUnitX;
-      currGridMarkerY = currGridMarkerY + rightSideUnitY;
+      currGridMarkerY = currGridMarkerY - rightSideUnitY;
 
     }
 
@@ -535,7 +813,7 @@ function drawCamTV(){
 
       //increment formal coords
       currGridMarkerX = currGridMarkerX + leftSideUnitX;
-      currGridMarkerY = currGridMarkerY + leftSideUnitY;
+      currGridMarkerY = currGridMarkerY - leftSideUnitY;
 
     }
 
@@ -611,7 +889,7 @@ function drawCamNormalsTV(){
 
 
   TVCTX.setLineDash([4, 7]);
-  drawLineFC(TVCTX, 0, 0, camScreenDVVirtualXCoord, camScreenDVVirtualYCoord, "Green" );
+  drawLineFC(TVCTX, 0, 0, camScreenDVVirtualXCoord, camScreenDVVirtualYCoord, "Yellow" );
 
   TVCTX.setLineDash([]);
 
@@ -629,6 +907,37 @@ function drawCamScreenDVTV(){
 
   //use linear equation. Use the camRO to the find the slope (m) and the cam's Z-coordinate to find the y intercept (b). Then increment your line's coordinate with this equation and keep looping until you've reached the length.
   //You need to find a way to measure the line that you're drawing. Use trig to do this.
+
+
+}
+
+//will draw the trianges on the TV
+function drawTrianglesTV(){
+
+  for(let t=0; t<trianglesArr.length; t=t+1){
+
+    //p1
+    let p1 = trianglesArr[t][0];
+    drawLineFCImprovedDashed(TVcanvas, TVCTX, 0, 0, p1[0], p1[2], "Pink");
+
+    let p2 = trianglesArr[t][1];
+    drawLineFCImprovedDashed(TVcanvas, TVCTX, 0, 0, p2[0], p2[2], "Pink");
+
+    let p3 = trianglesArr[t][2];
+    drawLineFCImprovedDashed(TVcanvas, TVCTX, 0, 0, p3[0], p3[2], "Pink");
+
+
+    //connect the points
+    //p1 to p2
+    drawLineFCImproved(TVcanvas, TVCTX, p1[0], p1[2], p2[0], p2[2], "Red");
+
+    drawLineFCImproved(TVcanvas, TVCTX, p2[0], p2[2], p3[0], p3[2], "Red");
+
+    drawLineFCImproved(TVcanvas, TVCTX, p3[0], p3[2], p1[0], p1[2], "Yellow");
+
+  }
+
+
 
 
 }
@@ -736,12 +1045,22 @@ function drawTrianglesCamV(){
 
 
     let p1ProjectedX = (p1[0]*camIHat[0]) + (p1[1]*camJHat[0]) + (p1[2]*camKHat[0]);
-    let p1ProjectedY = (p1[0]*camIHat[1]) + (p1[1]*camJHat[1]) + (p1[2]*camKHat[1]);
-    let p1ProjectedZ = (p1[0]*camIHat[2]) + (p1[1]*camJHat[2]) + (p1[2]*camKHat[2]);
+    //  let p1ProjectedX = (p1[0]*hybridMatrix[0][0]) + (p1[1]*hybridMatrix[1][0]) + (p1[2]*hybridMatrix[2][0]);
 
-    let p1ProjectedXTranslated = p1ProjectedX + camScreenDV[0];
-    let p1ProjectedYTranslated = p1ProjectedY + camScreenDV[1];
+      let p1ProjectedY = (p1[0]*camIHat[1]) + (p1[1]*camJHat[1]) + (p1[2]*camKHat[1]);
+     // let p1ProjectedY = (p1[0]*hybridMatrix[0][1]) + (p1[1]*hybridMatrix[1][1]) + (p1[2]*hybridMatrix[2][1]);
 
+      let p1ProjectedZ = (p1[0]*camIHat[2]) + (p1[1]*camJHat[2]) + (p1[2]*camKHat[2]);
+    //  let p1ProjectedZ = (p1[0]*hybridMatrix[0][2]) + (p1[1]*hybridMatrix[1][2]) + (p1[2]*hybridMatrix[2][2]);
+
+    let p1ProjectedXTranslated = p1ProjectedX - camScreenDV[0];
+    let p1ProjectedYTranslated = p1ProjectedY - camScreenDV[1];
+
+    applyConvergenceLens(p1ProjectedX, p1ProjectedY, p1ProjectedZ, p1[0], p1[1], p1[2]);
+    applyConvergenceLensBacktrackingMethod(p1ProjectedX, p1ProjectedY, p1ProjectedZ, p1[0], p1[1], p1[2]);
+
+    applyConvergenceLensCamTrackMethod(p1ProjectedX, p1ProjectedY, p1ProjectedZ, p1[0], p1[1], p1[2]);
+    console.log("MILKF");
     //drawing dotted vector of this point
     drawLineFCImprovedDashed(CamVCanvas, CamVCTX, camScreenDV[0], camScreenDV[1], p1ProjectedXTranslated, p1ProjectedYTranslated, "Pink");
 
@@ -753,11 +1072,16 @@ function drawTrianglesCamV(){
 
 
     let p2ProjectedX = (p2[0]*camIHat[0]) + (p2[1]*camJHat[0]) + (p2[2]*camKHat[0]);
-    let p2ProjectedY = (p2[0]*camIHat[1]) + (p2[1]*camJHat[1]) + (p2[2]*camKHat[1]);
-    let p2ProjectedZ = (p2[0]*camIHat[2]) + (p2[1]*camJHat[2]) + (p2[2]*camKHat[2]);
+   //  let p2ProjectedX = (p2[0]*hybridMatrix[0][0]) + (p2[1]*hybridMatrix[1][0]) + (p2[2]*hybridMatrix[2][0]);
 
-    let p2ProjectedXTranslated = p2ProjectedX + camScreenDV[0];
-    let p2ProjectedYTranslated = p2ProjectedY + camScreenDV[1];
+    let p2ProjectedY = (p2[0]*camIHat[1]) + (p2[1]*camJHat[1]) + (p2[2]*camKHat[1]);
+  //  let p2ProjectedY = (p2[0]*hybridMatrix[0][1]) + (p2[1]*hybridMatrix[1][1]) + (p2[2]*hybridMatrix[2][1]);
+
+    let p2ProjectedZ = (p2[0]*camIHat[2]) + (p2[1]*camJHat[2]) + (p2[2]*camKHat[2]);
+   //  let p2ProjectedZ = (p2[0]*hybridMatrix[0][2]) + (p2[1]*hybridMatrix[1][2]) + (p2[2]*hybridMatrix[2][2]);
+
+    let p2ProjectedXTranslated = p2ProjectedX - camScreenDV[0];
+    let p2ProjectedYTranslated = p2ProjectedY - camScreenDV[1];
 
     //drawing dotted vector of this point
     drawLineFCImprovedDashed(CamVCanvas, CamVCTX, camScreenDV[0], camScreenDV[1], p2ProjectedXTranslated, p2ProjectedYTranslated, "Pink");
@@ -770,11 +1094,18 @@ function drawTrianglesCamV(){
 
 
     let p3ProjectedX = (p3[0]*camIHat[0]) + (p3[1]*camJHat[0]) + (p3[2]*camKHat[0]);
-    let p3ProjectedY = (p3[0]*camIHat[1]) + (p3[1]*camJHat[1]) + (p3[2]*camKHat[1]);
-    let p3ProjectedZ = (p3[0]*camIHat[2]) + (p3[1]*camJHat[2]) + (p3[2]*camKHat[2]);
+   //  let p3ProjectedX = (p3[0]*hybridMatrix[0][0]) + (p3[1]*hybridMatrix[1][0]) + (p3[2]*hybridMatrix[2][0]);
 
-    let p3ProjectedXTranslated = p3ProjectedX + camScreenDV[0];
-    let p3ProjectedYTranslated = p3ProjectedY + camScreenDV[1];
+
+    let p3ProjectedY = (p3[0]*camIHat[1]) + (p3[1]*camJHat[1]) + (p3[2]*camKHat[1]);
+   // let p3ProjectedY = (p3[0]*hybridMatrix[0][1]) + (p3[1]*hybridMatrix[1][1]) + (p3[2]*hybridMatrix[2][1]);
+
+
+    let p3ProjectedZ = (p3[0]*camIHat[2]) + (p3[1]*camJHat[2]) + (p3[2]*camKHat[2]);
+  //  let p3ProjectedZ = (p3[0]*hybridMatrix[0][2]) + (p3[1]*hybridMatrix[1][2]) + (p3[2]*hybridMatrix[2][2]);
+
+    let p3ProjectedXTranslated = p3ProjectedX - camScreenDV[0];
+    let p3ProjectedYTranslated = p3ProjectedY - camScreenDV[1];
 
     //drawing dotted vector of this point
     drawLineFCImprovedDashed(CamVCanvas, CamVCTX, camScreenDV[0], camScreenDV[1], p3ProjectedXTranslated, p3ProjectedYTranslated, "Pink");
@@ -832,35 +1163,835 @@ function drawCamHatsCamV(){
 }
 
 
+//will draw the blue and orange circles on the camV so you can reference them with the points in the TV
+function drawColorRefCirclesCamV(){
+
+  let currGridMarkerX = 0;
+  let currGridMarkerY = 0;
+
+  CamVCTX.beginPath();
+  CamVCTX.fillStyle = "Blue";
+
+  for(let x=0; x<camWidth/2; x=x+1){
+
+    let currGridMarkerCanvasCoords = getCanvasCoordsOfActualCoords(x, 0);
+
+    CamVCTX.arc(currGridMarkerCanvasCoords[0], currGridMarkerCanvasCoords[1], 4, 0, 2*Math.PI);
+    CamVCTX.fill();
+
+  }
+
+  CamVCTX.beginPath();
+  CamVCTX.fillStyle = "Orange";
+
+  for(let y=0; y>-(camWidth/2); y=y-1){
+    let currGridMarkerCanvasCoords = getCanvasCoordsOfActualCoords(y, 0);
+
+    CamVCTX.arc(currGridMarkerCanvasCoords[0], currGridMarkerCanvasCoords[1], 4, 0, 2*Math.PI);
+    CamVCTX.fill();
+
+  }
+
+
+}
+
+//will find the spots by considering cam in identity position and then following cam rotation sequence
+function applyConvergenceLensCamTrackMethod(px, py, pz, staticPX, staticPY, staticPZ){
+
+  //findProjSpot();
+
+  findProjSpotDirectCamOrientation(px, py, pz);
+
+ // findConvergencePoint();
+
+
+
+  //Will consider the projSpot's location according to the cam in ID position. And simply orient that vector with the current camHats orientation via multiplication
+  function findProjSpotDirectCamOrientation(px, py, pz){
+
+    //step 0: apply the CSDV to them so we have the correct length
+    px = px + camScreenDV[0];
+    py = py + camScreenDV[1];
+    //pz = pz;
+    pz = pz;
+    //Step 1: Find the rotation orientation of the vector by multiplying with camhats
+    let translatedXComp = (px*camIHat[0]) + (py*camJHat[0]) + (pz*camKHat[0]);
+    let translatedYComp = (px*camIHat[1]) + (py*camJHat[1]) + (pz*camKHat[1]);
+    let translatedZComp = (px*camIHat[2]) + (py*camJHat[2]) + (pz*camKHat[2]);
+
+    //now displacing them per the cam coords
+    let displacedXComp = translatedXComp + camCoords[0];
+    let displacedYComp = translatedYComp + camCoords[1];
+    let displacedZComp = translatedZComp + camCoords[2];
+
+
+
+    console.log("TXCOMPS: " + displacedXComp + " , " + displacedYComp + " , " + displacedZComp);
+
+
+    //stsep 2: Now that you have the individual comp vectors. Just displace them as per the camCoords (start from the camCoords and then add those disps)
+  }
+
+
+  //inner function: Will find the real world coords of the projspot by considering its position when cam is under no HRO or VRO config. Then tracking it with the same sequence of rotations the cam went through
+  function findProjSpot(px, py, pz){
+
+    //remember that this projspot is like a vector that is using the CamCoords as its origin.
+
+    /**
+    //step1: find the real world coords of the projSpot when the cam is in its identity position (No HRO or VRO influence) (the coords are not important for now)
+    let stage1ProjX = camCoords[0] + (px + camScreenDV[0]);
+    let stage1ProjY = camCoords[1] + (py + camScreenDV[1]);
+    let stage1ProjZ = camCoords[2];
+    */
+
+    //step1: Find the length of the ProjSpot Vector (this is the projSpot when viewed as a vector with the camCenter as the origin points).
+   // let projSpotVecLen = Math.sqrt(Math.pow((px+camScreenDV[0]), 2) + Math.pow((py+camScreenDV[1]),2));
+
+
+    //step 1: get the component vectors of the projSpotVec with the cam in its identity position
+    let xComp = px + camScreenDV[0];
+    let yComp = py + camScreenDV[1];
+    //ZComp always starts out as 0 because the cam is in identity position
+    let stage1_zComp = 0;
+
+
+    let stage1_xComp_xDisp = Math.cos(camRO) * xComp;
+    stage1_zComp = -(Math.sin(camRO) * xComp);
+
+    //step 2: apply VRO rotation (using camHatsSequentialupdate as ref)
+    let yComp_yComp = Math.cos(camROVert)*yComp;
+    let yCompRed = Math.sin(camROVert) * yComp;
+    let yComp_xComp = Math.sin(camRO) * yCompRed;
+    let yComp_zComp = Math.cos(camRO) * yCompRed;
+
+
+
+
+    //step3: apply HRO rotation (you will get new disps on the X and Z axis, y remains thee same
+    let HRORot_XDisp = Math.cos(camRO) * projSpotVecLen;
+    let HRORot_ZDisp = Math.sin(camRO) * projSpotVecLen;
+
+
+
+    //final step: Once you have all the final Disps, just apply them starting from the camCenter
+
+
+
+
+   //step 3: take the final disps after both types of rotation and add to camCoords to get real world coords of projspot
+
+
+
+  }
+
+
+
+
+}
+
+
+
+
+
+
+function applyConvergenceLensBacktrackingMethod(px, py, pz, staticPX, staticPY, staticPZ){
+
+  //step 1: consider cam in current HRO+VRO config. Calc projection of YDisp of Local_CamCenterToProjSpot (CCTPS), onto prev frame (where only HRO is oriented)
+
+  let local_CCTPS_YDisp = py + camScreenDV[1];
+
+  //cos(vro) = adj / local_ccpts_ydisp
+  let CCTPS_YDisp_PrevFrameYComp = Math.cos(camROVert) * local_CCTPS_YDisp;
+
+  //tan(vro) = trajectory / CCT
+
+  let VROInfluencedTrajectory = Math.tan(camROVert) * CCTPS_YDisp_PrevFrameYComp;
+
+  //step 2: Now calc the XZ position of the projSpot in the HRO-only oriented frame. Call these prevFrame X and prevFrame Z
+
+  let prevFrameHyp = px+camScreenDV[0];
+
+
+  let prevFrameZComp = Math.sin(camRO) * prevFrameHyp;
+
+  let prevFrameXComp = Math.cos(camRO) * prevFrameHyp;
+
+
+  //step 2: use the trajectory (blue line) and HRO to work out the Z and X disps. Add these disps to the prev frame X and Z
+
+  let finalFrameZComp = Math.cos(camRO) * VROInfluencedTrajectory;
+
+  let finalFrameXComp = Math.sin(camRO) * VROInfluencedTrajectory;
+
+
+  //step 3: Now you have the X and Z coords of the spot and already have the Y spot from earlier on in the function (prevFrameYComp)
+
+  //step 4: moving from the cam center by the lengths found
+
+  let projSpotStage1X = camCoords[0] + prevFrameXComp;
+  let projSpotStage1Z = camCoords[2] + prevFrameZComp;
+
+  let projSpotStage2X = projSpotStage1X + finalFrameXComp;
+  let projSpotStage2Z = projSpotStage1Z + finalFrameZComp;
+
+  let finalX = projSpotStage2X;
+  let finalY = CCTPS_YDisp_PrevFrameYComp;
+  let finalZ = projSpotStage2Z;
+
+  console.log("finalX: " + finalX + " ; finalY: " + finalY + " ; finalZ: " + finalZ);
+
+  drawCircle(SVcanvas, SVCTX, finalZ, finalY, "Orange");
+  drawCircle(TVcanvas, TVCTX, finalX, finalZ, "Blue");
+
+
+}
+
+
+//Will take in a point (after projection) and then displace its coordinates by a convergence function
+//px py and pz stand for the x,y and z coords of the point that is to be passed in here
+//StaticPX stands for the static coordinates of the point in the 3D world (unaffected by camera movements)
+function applyConvergenceLens(px, py, pz, StaticPX, StaticPY, StaticPZ){
+
+  //step 1: get DistFromInherentProjectionsSpotToTriangleVector (draw a perpendicular line from the triangle's vector to where it lands on the cam)
+    //first get distFromCamCenterToProjSpot (Pythagorean)
+    //2 value array
+    let camLocalProjSpot = [];
+    camLocalProjSpot[0] = px + camScreenDV[0];
+    camLocalProjSpot[1] = py + camScreenDV[1];
+
+
+    //necessary for calc (DCCPS: Dist from cam center to proj spot)
+    let LocalDCCPS = Math.sqrt(Math.pow(camLocalProjSpot[0],2) + Math.pow(camLocalProjSpot[1], 2));
+
+    if(toggleSwitch_lens_CCToProjSpot==true){
+      shootRay(TVcanvas, TVCTX, camCoords[0], camCoords[2], camRO, LocalDCCPS, "Red");
+    }
+
+    //next get directDistFromCamCenterToPoint (the triangl vector point) (DDCCP)
+    //use pythgorean for x, y, and z dispacements of point
+    let DDCCP;
+    let DDCCPXDisp = StaticPX - camCoords[0];
+    let DDCCPYDisp = StaticPY - camCoords[1];
+    let DDCCPZDisp = StaticPZ - camCoords[2];
+
+
+
+    //necessary for calc (Direct Distance Cam Center To Point)
+    DDCCP = Math.sqrt(Math.pow(DDCCPXDisp, 2) + Math.pow(DDCCPYDisp, 2) + Math.pow(DDCCPZDisp, 2));
+
+
+
+    //now we need to calculate the 3D real coordinates of the projection spot. We can use this using the DCCPS, camROHorz, camROVert
+
+  //Remember we are finding the coordinates here (not the distance length)
+  let PRJSX = Math.cos(camRO) * ( camCoords[0] + camScreenDV[0] + px );
+
+  let PRJSZ = camCoords[2] + (Math.tan(camRO) * (PRJSX-camCoords[0]));
+  let PRJSY = (Math.cos(camROVert)) * ( camCoords[1] + camScreenDV[1] + py);
+  PRJSY = camCoords[1] + (Math.tan(camROVert) * (PRJSZ-camCoords[1]));
+  PRJSY = camCoords[1] + (PRJSZ/(Math.tan(camROVert)));
+
+  //now factoring in the camROVert to all the coordinates
+  //On the X-axis
+  PRJSY = camCoords[1] + (((camScreenDV[1]+py)-camCoords[1])*Math.cos(camROVert));
+
+
+
+
+  //compensating for VRO (Z-axis disp)
+  let vroZDisp = Math.sin(camROVert) * (camScreenDV[1]+py+camCoords[1]);
+  PRJSZ = PRJSZ + vroZDisp;
+
+  console.log("Watermelon: PRJSX: " + PRJSX + " ; PRJSY: " + PRJSY + " ; PRJSZ: " + PRJSZ);
+
+
+  //Visual Testing start (this is just confirming on the panels of the locations of the coords)
+  let PRJSXZConverted = getCanvasCoordsOfActualCoordsImproved(TVcanvas, PRJSX, PRJSZ);
+  let PRJSXConverted = PRJSXZConverted[0];
+  let PRJSZConverted = PRJSXZConverted[1];
+
+  //running through a polarity check to dedcide to reverse polarity if the original vals were negative
+  //if(PRJSX < 0){PRJSXConverted = PRJSXConverted * -1;}
+
+  //if(PRJSZ < 0){PRJSZConverted = PRJSZConverted * -1;}
+
+  TVCTX.beginPath();
+
+  TVCTX.strokeStyle = "Yellow";
+  TVCTX.arc(PRJSXConverted, PRJSZConverted, 10, 0, 2 * Math.PI);
+  TVCTX.stroke();
+
+  let PRJSXYConverted = getCanvasCoordsOfActualCoordsImproved(SVcanvas, PRJSX, PRJSY);
+  let PRJSYConverted = PRJSXYConverted[1];
+
+  //if(PRJSY < 0){PRJSYConverted = PRJSYConverted * -1;}
+
+  //console.log("Converted XYZ: " + PRJSXConverted + " , " + PRJSYConverted + " , " + PRJSZConverted);
+
+  //Drawing the projection spot on the SV
+  let testZ = PRJSZ;
+  let testY = PRJSY;
+  let testCoords = getCanvasCoordsOfActualCoordsImproved(SVcanvas, testZ, testY);
+  SVCTX.beginPath();
+
+  SVCTX.strokeStyle = "Yellow";
+  SVCTX.arc(testCoords[0], testCoords[1], 10, 0, 2*Math.PI);
+  SVCTX.stroke();
+
+  //Visual testing end
+
+
+
+
+    /**
+     * OLD METHOD DO NOT USE
+    let PSRealXDisp = Math.cos(camRO) * DDCCPXDisp;
+    let PSRealYDisp = Math.sin(camRO) * DDCCPXDisp;
+    //note I'm not sure about this. So verify if you have to use Tan.
+    let PSRealZDisp = Math.tan(camROVert) * DDCCPXDisp;
+    */
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
 //<<end of camV draw functions>>
 
+//<<start of SV draw functions>>
+
+function drawGridSV(){
+
+  var columnUnitLength = SVcanvas.width / gridColumns;
+  var rowUnitLength = SVcanvas.height / gridRows;
+
+  SVCTX.strokeStyle = "Grey";
+
+  for(let x=0; x<=SVcanvas.width; x=x+columnUnitLength){
+
+    if(x==SVcanvas.width/2){x=x+columnUnitLength;}
+
+    SVCTX.beginPath();
+    SVCTX.moveTo(x, 0);
+    SVCTX.lineTo(x, SVcanvas.height);
+    SVCTX.stroke();
+
+  }
+
+  for(y=0; y<=SVcanvas.height; y=y+rowUnitLength){
+
+    if(y==SVcanvas.height/2){y=y+rowUnitLength;}
+
+    SVCTX.beginPath();
+    SVCTX.moveTo(0, y);
+    SVCTX.lineTo(SVcanvas.width, y);
+    SVCTX.stroke();
+  }
+
+  //drawing the axis
+
+  SVCTX.strokeStyle = "Red";
+
+  SVCTX.beginPath();
+  SVCTX.moveTo(SVcanvas.width/2, 0);
+  SVCTX.lineTo(SVcanvas.width/2, SVcanvas.height);
+  SVCTX.stroke();
+
+
+  SVCTX.beginPath();
+  SVCTX.moveTo(0, SVcanvas.height/2);
+  SVCTX.lineTo(SVcanvas.width, SVcanvas.height/2);
+  SVCTX.stroke();
+
+
+
+}
+
+
+function drawCamSV(){
+
+  //x(SV) is z(Cam)
+  //y(SV) is y(Cam)
+
+  SVCTX.strokeStyle = "Orange";
+
+  let convertedCoordsCamOrigin = getCanvasCoordsOfActualCoords(camCoords[2], camCoords[1]);
+
+  SVCTX.beginPath();
+  SVCTX.moveTo(convertedCoordsCamOrigin[0], convertedCoordsCamOrigin[1]);
+
+  console.log("CCCO[0]: " + convertedCoordsCamOrigin[0]);
+  console.log("CCC[1]: " + convertedCoordsCamOrigin[1]);
+
+  let convertedCoordsDestTopSide = getCanvasCoordsOfActualCoords(camCoords[2]+(Math.sin(camROVert)*(camHeight/2)), camCoords[1]+(Math.cos(camROVert)*(camHeight/2)));
+
+  SVCTX.lineTo((convertedCoordsDestTopSide[0]), (convertedCoordsDestTopSide[1]));
+  SVCTX.stroke();
+
+  SVCTX.strokeStyle = "Green";
+
+  SVCTX.beginPath();
+  SVCTX.moveTo(convertedCoordsCamOrigin[0], convertedCoordsCamOrigin[1]);
+
+  //Apple (Are you sure the Xcoord of the DestBottomSide is camCoords[2]-(..) and not camCoords[2]+(..)). It seems like you have to add it, not subtract it.
+  let convertedCoordsDestBottomSide = getCanvasCoordsOfActualCoords(camCoords[2]-(Math.sin(camROVert)*(camHeight/2)), camCoords[1]-(Math.cos(camROVert)*(camHeight/2)));
+
+  SVCTX.lineTo(convertedCoordsDestBottomSide[0], convertedCoordsDestBottomSide[1]);
+  SVCTX.stroke();
+
+
+  //drawing the pole
+  SVCTX.strokeStyle = "#00eaff";
+  SVCTX.beginPath();
+  SVCTX.moveTo(convertedCoordsCamOrigin[0], convertedCoordsCamOrigin[1]);
+
+  //let convertedCoordsCenterPole = getCanvasCoordsOfActualCoords(camCoords[2]+(Math.cos(camROVert)), camCoords[1]+(Math.sin(camROVert)));
+  let convertedCoordsCenterPole = getCanvasCoordsOfActualCoords(camCoords[2]+(Math.cos(camROVert)), camCoords[1]-(Math.sin(camROVert)));
+
+  SVCTX.lineTo(convertedCoordsCenterPole[0], convertedCoordsCenterPole[1]);
+  SVCTX.stroke();
+}
+
+function drawWorldHatsSV(){
+
+  //drawing worldIHat
+//  drawLineFCImprovedDashed(SVcanvas, SVCTX, 0, 0, worldIHat[2], worldIHat[1]);
+  drawLineFC(SVCTX, 0, 0, worldIHat[2], worldIHat[1], "Orange");
+  fillTextFC(SVCTX, worldIHat[2], worldIHat[1], "Orange", "WI^");
+
+
+//  drawLineFCImproved(SVcanvas, SVCTX, 0, 0, worldJHat[2], worldJHat[1]);
+  drawLineFC(SVCTX, 0, 0, worldJHat[2], worldJHat[1], "Orange");
+  fillTextFC(SVCTX, worldJHat[2], worldJHat[1], "Orange", "WJ^");
+
+
+
+
+ // drawLineFCImproved(SVcanvas, SVCTX, 0, 0, worldKhat[2], worldKhat[1]);
+  drawLineFC(SVCTX, 0, 0, worldKhat[2], worldKhat[1], "Orange");
+  fillTextFC(SVCTX, worldKhat[2], worldKhat[1], "Orange", "WK^");
+
+}
+
+function drawCamHatsSV(){
+
+  drawLineFC(SVCTX, 0, 0, camIHat[2], camIHat[1], "Blue");
+  fillTextFC(SVCTX, camIHat[2], camIHat[1], "Blue", "CI^");
+
+  drawLineFC(SVCTX, 0, 0, camJHat[2], camJHat[1], "Red");
+  fillTextFC(SVCTX, camJHat[2], camJHat[1], "Red", "CJ^");
+
+  drawLineFC(SVCTX, 0, 0, camKHat[2], camKHat[1], "Green");
+  fillTextFC(SVCTX, camKHat[2], camKHat[1], "Green", "CK^");
+
+
+
+}
+
+
+function drawCamDistToOriginSV(){
+
+  drawLineFCImprovedDashed(SVcanvas, SVCTX, 0, 0, camCoords[2], camCoords[1], "Blue");
+
+}
+
+
+//will draw a dotted line from the camHats to the camera screen, which will land on the spot that marks the tail of the camScreenDV
+function drawCamNormalsSV(){
+
+  //step 1: calculate distance from camCenter to camHatsCenter
+  //first calculating the distance from cam to origin
+  //use pythagorean theorem
+  let camDistSquared = Math.pow(camCoords[2],2) + Math.pow(camCoords[1],2);
+  let camDist = Math.sqrt(camDistSquared);
+
+
+  //step 2: Now that you're at the CamCenter, compensate for the CamScreenDV.
+
+  //wait a minute, Just straight away find the dest coords, it was pointless to calculate the dist
+  //x:cc[2]  + (sin(VRO)*CamScreenDV[1])
+  //y:cc[1]  + (cos(VRO)*CamScreenDV[1])
+
+  let camScreenDVVirtualXCoord = camCoords[2] + (Math.sin(camROVert)*camScreenDV[1]);
+  let camScreenDVVirtualYCoord = camCoords[1] + ((Math.cos(camROVert))*camScreenDV[1]);
+
+  drawLineFCImprovedDashed(SVcanvas, SVCTX, 0, 0, camScreenDVVirtualXCoord, camScreenDVVirtualYCoord, "Green");
+
+
+
+
+
+}
+
+function drawProjectionRaysTrianglesSVStrong(){
+
+  if(projectionRaysSVStrongToggleSwitch!=true){
+
+    for(let t=0; t<trianglesArr.length; t=t+1){
+
+      for(let p=0; p<trianglesArr[t].length; p=p+1){
+
+        shootRay(SVcanvas, SVCTX, trianglesArr[t][p][0], trianglesArr[t][p][2], (camROVert)-(Math.PI/2), 10, "Red");
+
+      }
+
+    }
+
+
+  }
+
+
+
+}
+
+
+
+function drawProjectionRaysSVStrong(){
+
+  if(projectionRaysSVStrongToggleSwitch != true){
+    drawProjectionRaysWorldHatsSVRayShootMethod();
+    drawProjectionRaysCamHatsSVRayShootMethod();
+  }
+
+  //inner function
+  function drawProjectionRaysCamHatsSVRayShootMethod(){
+
+    shootRay(SVcanvas, SVCTX, camIHat[2], camIHat[1], camROVert-(Math.PI)/2, 10, "Blue");
+
+    shootRay(SVcanvas, SVCTX, camJHat[2], camJHat[1], camROVert-(Math.PI)/2, 10, "Red");
+
+    shootRay(SVcanvas, SVCTX, camKHat[2], camKHat[1], camROVert-(Math.PI)/2, 10, "Yellow");
+
+
+  }
+
+
+  //inner function
+  function drawProjectionRaysWorldHatsSVRayShootMethod(){
+
+    //dealing with worldI^
+    //might have to turn camRO negative here
+    shootRay(SVcanvas, SVCTX, worldIHat[2], worldIHat[1], camROVert-(Math.PI)/2, 10, "Orange");
+
+    shootRay(SVcanvas, SVCTX, worldJHat[2], worldJHat[1], camROVert-(Math.PI)/2, 10, "Orange");
+
+    shootRay(SVcanvas, SVCTX, worldKhat[2], worldKhat[1], camROVert-(Math.PI)/2, 10, "Orange");
+
+
+  }
+
+
+
+}
+
+
+
+//<<end of SV draw functions>>
+
+
+
+
+
+
 //END OF DRAW FUNCTIONS
+
+//START OF JOYSTICK FUNCTIONS
+function applyJoystick(event){
+
+
+
+
+  camRO = 0;
+  camROVert = 0;
+
+
+    var quadrantNum = checkQuadrant();
+
+  console.log("quadrantNum: " + quadrantNum );
+
+    switch (quadrantNum){
+
+      case 1: applyPitchDownAndYawLeft(); break;
+      case 2: applyPitchDownAndYawRight(); break;
+      case 3: applyPitchUpAndYawRight(); break;
+      case 4: applyPitchUpAndYawLeft(); break;
+
+    }
+
+
+
+
+
+
+
+    function checkQuadrant(){
+        var XPos = event.offsetX;
+        var YPos = event.offsetY;
+
+        let quadrantNum = 0;
+
+        if(XPos < 50){
+          if(YPos < 50){
+            quadrantNum = 1;
+          }
+
+          else{
+            quadrantNum = 4;
+          }
+        }
+
+        if(XPos > 50){
+
+          if(YPos < 50){
+            quadrantNum = 2;
+          }
+
+          else{
+            quadrantNum = 3;
+          }
+
+        }
+
+
+        return quadrantNum;
+
+    }
+
+
+
+    function applyPitchDownAndYawLeft(){
+
+
+
+        let oppLen = 50 - event.offsetX;
+        let adjLen = 50 - event.offsetY;
+
+        let yawLeftIntensity = oppLen / 100;
+        let pitchDownIntensity = adjLen / 100;
+
+      console.log("yawLeftIntensity: " + yawLeftIntensity);
+      console.log("pitchDownIntensity: " + pitchDownIntensity);
+
+        rotateCamLeft(yawLeftIntensity);
+        rotateCamDown(pitchDownIntensity);
+
+    }
+
+
+    function applyPitchDownAndYawRight(){
+      let oppLen = event.offsetX - 50;
+      let adjLen = 50 - event.offsetY;
+
+      let yawRightIntensity = oppLen / 100;
+      let pitchDownIntensity = adjLen / 100;
+
+      rotateCamRight(yawRightIntensity);
+      rotateCamDown(pitchDownIntensity);
+
+
+    }
+
+    function applyPitchUpAndYawRight(){
+      let oppLen = event.offsetX - 50;
+      let adjLen = 50 - event.offsetY;
+
+      let yawRightIntensity = oppLen / 100;
+      let pitchUpIntensity = adjLen / 100;
+
+      rotateCamRight(yawRightIntensity);
+      rotateCamDown(pitchUpIntensity);
+
+    }
+
+
+    function applyPitchUpAndYawLeft(){
+      let oppLen = event.offsetX - 50;
+      let adjLen = 50 - event.offsetY;
+
+      let yawLeftIntensity = oppLen / 100;
+      let pitchUpIntensity = adjLen / 100;
+
+      rotateCamRight(yawLeftIntensity);
+      rotateCamDown(pitchUpIntensity);
+
+
+
+    }
+
+
+
+}
+
+
+
+
+
+
+
+function activateJoystickActiveSwitch(){
+
+  document.getElementById("joystickCanvas").addEventListener("mousemove", applyJoystick);
+
+
+  if(joystickActiveSwitch==false){
+    joystickActiveSwitch = true;
+  }
+
+  else{
+    joystickActiveSwitch = false;
+  }
+
+}
+
+//END OF JOYSTICK FUNCTIONS
 
 
 //START OF ACTION FUNCTIONS
 
 function rotateCamRight(amount){
 
-  camRO = camRO + amount;
+  camRO = camRO - amount;
 
-  updateCamHats();
+  //add horzRotMatrix to rotMatrixStack
+  //rotMatrixStack[rotMatrixStackIndex] = "Horz";
+ // rotMatrixStackIndex = rotMatrixStackIndex + 1;
+
+
+  //updateCamHatsHorz();
+
+  //updateCamHatsMulti();
+
+  updateCamHatsSequential();
+
+
+  updateCamViewScope();
 
   calculateCamScreenDV();
 
   TVCTX.clearRect(0, 0, TVcanvas.width, TVcanvas.height);
   CamVCTX.clearRect(0, 0, CamVCanvas.width, CamVCanvas.height);
+  SVCTX.clearRect(0, 0, SVcanvas.width, SVcanvas.height);
 
   renderTV();
   renderCamV();
+  renderSV();
 
 }
 
 
 function rotateCamLeft(amount){
 
-  camRO = camRO - amount;
+  camRO = camRO + amount;
 
-  updateCamHats();
+  //add horzRotMatrix to rotMatrixStack
+ // rotMatrixStack[rotMatrixStackIndex] = "Horz";
+ // rotMatrixStackIndex = rotMatrixStackIndex + 1;
+
+
+ // updateCamHatsHorz();
+
+ // updateCamHatsMulti();
+
+  updateCamHatsSequential();
+
+
+
+  updateCamViewScope();
+
+  calculateCamScreenDV();
+
+
+
+  TVCTX.clearRect(0, 0, TVcanvas.width, TVcanvas.height);
+  CamVCTX.clearRect(0, 0, CamVCanvas.width, CamVCanvas.height);
+  SVCTX.clearRect(0, 0, SVcanvas.width, SVcanvas.height);
+
+  renderTV();
+  renderCamV();
+  renderSV();
+
+
+}
+
+function rotateCamUp(amount){
+
+  camROVert = camROVert - amount;
+
+ // updateCamHatsVert();
+
+  //updateCamHatsMulti();
+
+  updateCamHatsSequential();
+
+  updateCamViewScope();
+
+  calculateCamScreenDV();
+
+  TVCTX.clearRect(0, 0, TVcanvas.width, TVcanvas.height);
+  CamVCTX.clearRect(0, 0, CamVCanvas.width, CamVCanvas.height);
+  SVCTX.clearRect(0, 0, SVcanvas.width, SVcanvas.height);
+
+  renderTV();
+  renderCamV();
+  renderSV();
+
+}
+
+function rotateCamDown(amount){
+
+  camROVert = camROVert + amount;
+
+  //updateCamHatsVert();
+
+  //updateCamHatsMulti();
+
+  updateCamHatsSequential();
+
+  updateCamViewScope();
+
+  calculateCamScreenDV();
+
+  TVCTX.clearRect(0, 0, TVcanvas.width, TVcanvas.height);
+  CamVCTX.clearRect(0, 0, CamVCanvas.width, CamVCanvas.height);
+  SVCTX.clearRect(0, 0, SVcanvas.width, SVcanvas.height);
+
+  renderTV();
+  renderCamV();
+  renderSV();
+
+
+  console.log("EGG: I^[x]: " + camIHat[0] + " I^[y]: " + camIHat[1] + " I^[z]: " + camIHat[2]);
+  console.log("EGG: J^[x]: " + camJHat[0] + " J^[y]: " + camJHat[1] + " J^[z]: " + camJHat[2]);
+  console.log("EGG: K^[x]: " + camKHat[0] + " K^[y]: " + camKHat[1] + " K^[z]: " + camKHat[2]);
+
+}
+
+
+function moveCamForward(amount){
+
+  updateCamCoordsMoveFoward(amount);
+
+
+
+ // calculateCamHatsMag();
+
+  //Note: updating camHats is probably pointless because the CamRO is not changing. But nonetheless I am doing it just in case
+  //updateCamHats();
+
+  updateCamViewScope();
+
+
 
   calculateCamScreenDV();
 
@@ -870,37 +2001,371 @@ function rotateCamLeft(amount){
   renderTV();
   renderCamV();
 
+  //inner function. Will update the cam coords based on RO
+  function updateCamCoordsMoveFoward(amount){
+
+    //calculating Z-axis disp of camera (which is the Y-axis on TV)
+    //cos(camRO) = adj / amount. adj = cos(camRO)*amount. adj is the z-axis disp
+    let zDisp = Math.cos(camRO) * amount;
+
+    //calculating X-axis disp of camera
+    //sin(camRO) = opp / amount. opp = sin(camRO) * amount.
+    let xDisp = -(Math.sin(camRO) * amount);
+
+
+    //caldulating Y-axis disp of camera TO DO Watermelon : feature in y-axis disps once you implement vertical RO
+
+
+
+
+    //now updating the cam coords
+    //z coord
+    camCoords[2] = camCoords[2] + zDisp;
+
+    //x coord
+    camCoords[0] = camCoords[0] + xDisp;
+
+
+
+
+
+  }
+
 
 }
+
+
+function moveCamBackwards(amount){
+
+  updateCamCoordsMoveBackwards(amount);
+
+ // calculateCamHatsMag();
+
+  //Note: updating camHats is probably pointless because the CamRO is not changing. But nonetheless I am doing it just in case
+  updateCamHats();
+
+  updateCamViewScope();
+
+  calculateCamScreenDV();
+
+  TVCTX.clearRect(0, 0, TVcanvas.width, TVcanvas.height);
+  CamVCTX.clearRect(0, 0, CamVCanvas.width, CamVCanvas.height);
+
+  renderTV();
+  renderCamV();
+
+  //inner function. Will update the cam coords based on RO
+  function updateCamCoordsMoveBackwards(amount){
+
+    //calculating Z-axis disp of camera (which is the Y-axis on TV)
+    //cos(camRO) = adj / amount. adj = cos(camRO)*amount. adj is the z-axis disp
+    let zDisp = Math.cos(camRO) * amount;
+
+    //calculating X-axis disp of camera
+    //sin(camRO) = opp / amount. opp = sin(camRO) * amount.
+    let xDisp = Math.sin(camRO) * amount;
+
+
+    //caldulating Y-axis disp of camera TO DO Watermelon : feature in y-axis disps once you implement vertical RO
+
+
+
+
+    //now updating the cam coords
+    //z coord
+    camCoords[2] = camCoords[2] - zDisp;
+
+    //x coord
+    camCoords[0] = camCoords[0] - xDisp;
+
+
+
+
+
+  }
+
+
+}
+
+
+
 
 //END OF ACTION FUNCTIONS
 
 
 //START OF SYSTEM FUNCTIONS (COORD AND VARIABLE UPDATING)
 
+//Function used in experiment 21J-1 . Temporarily commented out.
+/**
+function calculateCamHatsMag(){
+
+  let camDistSquared = Math.pow(camCoords[0],2) + Math.pow(camCoords[2],2);
+  let camDist = Math.sqrt(camDistSquared);
+
+  //CamHatsMag has an inverse relationship with DistToOrigin
+  camHatsMag = 1/camDist;
+
+}
+*/
+
+
+//will use the sequential method of updating the camHats
+function updateCamHatsSequential(){
+
+  //first update IHat
+  camIHat[0] = Math.cos(camRO);
+  camIHat[2] = -(Math.sin(camRO));
+
+
+  //now update JHat
+  let JHatYellow = Math.cos(camROVert);
+
+  camJHat[1] = Math.cos(camROVert);
+
+  let JHatRed = Math.sin(camROVert);
+
+  camJHat[0] = Math.sin(camRO) * JHatRed;
+
+  camJHat[2] = Math.cos(camRO) * JHatRed;
+
+
+  //updating KHat
+  //first orienting with HRO
+  let KHatXDisp = Math.sin(camRO);
+  let KHatZDisp = Math.cos(camRO);
+
+  //this is the final X landing spot
+  let KHatXDisp_XDisp = Math.cos(camROVert) * KHatXDisp;
+
+  let KHatRed = KHatXDisp_XDisp / Math.sin(camRO);
+
+  //this is the final y landing spot
+  let KHatYDisp = Math.tan(camROVert) * KHatRed;
+
+  //this is the final z landing spot
+  let KHatZDisp_ZDisp = Math.cos(camROVert) * KHatZDisp;
+
+
+
+
+  camKHat[0] = KHatXDisp_XDisp;
+  camKHat[1] = -Math.sin(camROVert);
+  camKHat[2] = KHatZDisp_ZDisp;
+
+
+  console.log("APPLE FUCK");
+
+
+
+
+
+
+
+
+}
+
+
+
+//will use the 2 channel method of updating camHats
+function updateCamHatsMulti(){
+
+  //Horz channel
+  camIHat[0] = Math.cos(camRO);
+  camIHat[2] = -(Math.sin(camRO));
+
+  camKHat[0] = Math.sin(camRO);
+  camKHat[2] = Math.cos(camRO);
+
+
+  //Vert channel
+  //J^ channel 1 (vert)
+  camJHat[1] = Math.cos(camROVert);
+
+
+
+
+  camJHat[2] = (Math.sin(camROVert));
+
+  //might need to factor in HRO for jhat
+  //experimental (cross section of angles idea used)
+  camJHat[0] = Math.sin(camRO*camROVert);
+
+
+  //this is based on the inner nested displacement of the existing yDisp
+ // camJHat[1] = Math.cos(camRO)*camJHat[1];
+
+
+
+
+
+  //exerimentap
+
+
+  //I think K^ is taken care of for now. focus on the other hats
+  camKHat[0] = -(Math.cos(camROVert)) * camKHat[0];
+  camKHat[1] = Math.sin(camROVert);
+ // camKHat[1] = -(Math.sin(camROVert)) * camKHat[1];
+  camKHat[2] = Math.cos(camROVert) * camKHat[2];
+
+
+
+
+
+}
+
+
+
+function updateHybridMatrixHorzRot(){
+
+  //updating I^
+ // camIHat[0] = (Math.cos(camRO));
+ // camIHat[2] = -(Math.sin(camRO));
+
+  hybridMatrix[0][0] = hybridMatrix[0][0] * (Math.cos(camRO));
+  hybridMatrix[0][2] = hybridMatrix[0][2] * (-(Math.sin(camRO)));
+
+
+  //updating K^
+ // camKHat[0] = (Math.sin(camRO));
+ // camKHat[2] = (Math.cos(camRO));
+
+  hybridMatrix[2][0] = hybridMatrix[2][0] * (Math.sin(camRO));
+  hybridMatrix[2][2] = hybridMatrix[2][2] * (Math.cos(camRO));
+
+
+}
+
+
+
+
 //will update the camHats. Must be called every time the camera rotates
-function updateCamHats(){
+//will use the hybrid Matrix to update the camHats
+function updateCamHatsHorz(){
 
   //updating I^
 
   camIHat[0] = (Math.cos(camRO));
 
   //TO DO Watermelon : The y value for this will be updated with looking up and down.
-  //camIHat[1] = (Math.cos(camROVert));
+  //note: the equation below might be wrong. You should use sin not cos
+  // camIHat[1] = (Math.cos(camROVert));
+
+  //NEWCODE FACTOR IN VERT ROT
+  //camIHat[1] = (Math.sin(camROVert));
+  //NEWCODE FACTOR IN VERT ROT
 
   camIHat[2] = -(Math.sin(camRO));
 
+  //Added after 22nd June
   //To Do Watermelon : update J^ when implementing vertical cam rotation
+  //To Do Watermelon : you need to update the camJHat[0]. The component vectors are a little tricky to figure out, use maya.
+  //To Do watermelon: camJHat[0] is probably sin(camRO). Just try it and see
+  //JOHNNY BRAVO
+  //camJHat[0] = -(Math.sin(camROVert));
+  // camJHat[0] = (Math.sin(camRO));
+ // camJHat[1] = (Math.cos(camROVert));
+  //camJHat[2] = (Math.sin(camROVert));
+
+  //NEWCODE FACTOR IN VERT ROT
+  //DEALING WITH CAMJHAT
+/**
+  let theta1 = (Math.PI/2) - camROVert;
+  let theta2 = -((Math.PI/2) - camRO);
+
+  let yDisp = Math.sin(theta1);
+  let hyp1 = Math.cos(theta1);
+
+  let zDisp = Math.sin(theta2) * hyp1;
+  let xDisp = Math.cos(theta2) * hyp1;
+
+  camJHat[0] = xDisp;
+  camJHat[1] = yDisp;
+    camJHat[2] = zDisp;
+*/
+  //NEWCODE FACTOR IN VERT ROT
 
 
+  /**
+   //EXPERIMENTAL
+   //camJHat[0] = (Math.sin(camRO));
+   camJHat[1] = (Math.sin(camROVert));
+   camJHat[2] = (Math.cos(camROVert));
+
+
+   // camJHat[0] = (Math.cos(camROVert));
+   camJHat[1] = (Math.sin(camROVert));
+   camJHat[2] = (Math.cos(camROVert));
+
+   //EXPERMENTAL
+   */
 
   //updating K^
   camKHat[0] = (Math.sin(camRO));
   //TO DO Watermelon : The y value for this will be updated with looking up and down.
 
-  camKHat[2] = (Math.cos(camRO));
+ // camKHat[1] = (Math.sin(camROVert));
+
+  //NEWCODE VERT ROT
+  
+
+  //NEWCODE VERT ROT
+
+  camKHat[2] = (Math.cos(camRO)) * Math.cos(camROVert);
 
 
+
+
+
+
+
+
+}
+
+
+
+function updateCamHatsVert(){
+
+  //updating J^
+  camJHat[1] = Math.cos(camROVert);
+  camJHat[2] = Math.sin(camROVert);
+
+  //updating K^
+  camKHat[1] = -(Math.sin(camROVert)) * (Math.cos(camRO));
+
+  //this line below is kind of experimental. It is based on the idea of matrix multiiplication because it is the only square in the matrix that is modified by vertical AND horizontal cam rotations.
+  //camKHat[2] = Math.cos(camROVert) * (Math.cos(camRO)) * -(Math.sin(camRO));
+  //camKHat[2] = Math.cos( camROVert * Math.cos(camRO));
+  camKHat[2] = Math.cos(camROVert) * (Math.cos(camRO));
+
+  console.log("Cos(VRO):"+(Math.cos(camROVert)) + " * Cos(HRO):" + (Math.cos(camRO)));
+
+
+
+
+
+
+
+
+}
+
+
+//will define the dimensions of the camViewScope based on the current camCoords
+function updateCamViewScope(){
+
+  //first defining the camViewScopeNormals Point
+
+
+
+
+
+}
+
+
+function updateCamYPlaneToOriginAngle(){
+
+  let extraAngle = Math.atan(camCoords[1]/camCoords[2]);
+
+  camYPlaneToOriginAngle = (Math.PI / 2) + extraAngle;
 
 
 }
@@ -922,8 +2387,12 @@ function updateCamXPlaneToOriginAngle(){
 
 
 
-  //now we have to add 90 degrees to
-  camXPlaneToOriginAngle = extraAngle + (Math.PI/2);
+  //now we have to add 90 degrees to it.
+  camXPlaneToOriginAngle = (Math.PI / 2) + extraAngle;
+
+
+
+
 
 
 }
@@ -935,19 +2404,82 @@ function updateCamXPlaneToOriginAngle(){
 
 //START OF MAINTENENCE FUNCTIONS
 
+//will calculate the distance between the camera's center and the world origin.
+function calcDistToOrigin(){
+
+  //we need to find the component vectors of the x,y and z axis.
+  let camDistSquared = Math.pow(camCoords[0],2) + Math.pow(camCoords[1], 2) + Math.pow(camCoords[2],2);
+  let camDist = Math.sqrt(camDistSquared);
+
+  return camDist;
+}
+
+
 //Will update the camScreenDV by using the camRO and cam coords
 //Investigative note: Make sure the final polarity of the value is accurate. If the vector has to land to the left of the camera, it has to be negative. If it has to land right, it has to be positive.
 function calculateCamScreenDV(){
 
   //first calculating the distance from cam to origin
   //use pythagorean theorem
- let camDistSquared = Math.pow(camCoords[0],2) + Math.pow(camCoords[2],2);
- let camDist = Math.sqrt(camDistSquared);
+ //let camDistSquared = Math.pow(camCoords[0],2) + Math.pow(camCoords[2],2);
+ let camDist = calcDistToOrigin();
 
 
   updateCamXPlaneToOriginAngle();
 
+  updateCamYPlaneToOriginAngle();
+
+  //blueberry: add an alternative updateCamXPlaneToOriginAngle
+
+
+
  camScreenDV[0] = -(Math.cos(camXPlaneToOriginAngle - camRO) * camDist);
+
+  //not sure if this is the correct calculation
+  //camScreenDV[1] = (Math.cos(camXPlaneToOriginAngle - camROVert) * camDist);
+
+  //Floating code for now.
+  //camScreenDV[1] = (Math.tan(camROVert) * camDist);
+
+  //organically calculating the y-axis of the camScreenDV
+  //tanX = yDispofCam / zDispOfCam
+ // let angleX = Math.atan(camCoords[1]/camCoords[2]);
+
+ // let camYPlaneToOriginAngle = (Math.PI/2) + angleX;
+ // let angleB = camYPlaneToOriginAngle - camROVert;
+
+  //cos(angleB) = adj / camdist
+ // camScreenDV[1] = Math.cos(angleB) * camDist;
+  camScreenDV[1] = (Math.cos(camYPlaneToOriginAngle - camROVert) * camDist);
+
+
+
+
+
+
+
+
+
+
+ //now we have to decide if we should reverse the polarity depending on which side of the x-axis the cam is on.
+
+  if(camCoords[2] < 0){
+    camScreenDV[0] = camScreenDV[0] * 1;
+  }
+
+
+  /**
+  if(camCoords[1] < 0){
+    camScreenDV[1] = camScreenDV[1] * -1;
+  }
+   */
+
+
+  //EXPERIMENTAL PHASE: Adjusting magnitude of CamScreenDV
+  //This code segment has been marked as DANGER CODE. Which means that it could possibly cause a lot of problems so you should always consider it when debugging
+  //DANGER CODE DINOSAUR
+  //camScreenDV[0] = camScreenDV[0]*2;
+
 
 
  //TO DO Watermelon : You need to calculate the y coordinate of the DV. camScreenDV[1];
@@ -956,6 +2488,24 @@ function calculateCamScreenDV(){
 
 
 }
+
+//will draw a big Circle in the formal coords specified and on the canvas specified and the color specified.
+function drawCircle(canvas, ctx, X, Y, color){
+
+
+  let coords = getCanvasCoordsOfActualCoordsImproved(canvas, X, Y);
+
+  ctx.strokeStyle = color;
+
+  ctx.arc(coords[0], coords[1], 10, 0, 2*Math.PI);
+  ctx.stroke();
+
+
+
+
+
+}
+
 
 
 //Will take in an source point (of the ray), an angle (in radians), a length, and color. It will shoot a ray from the source point at the specified angle, and it will shoot it for that length. The ray will be the specified color
@@ -1095,23 +2645,32 @@ function displayText(){
   let camRORounded = Math.round(camRO*100)/100;
   document.querySelector("#CamROReadingOutput").innerText = camRORounded;
 
+  let camROVertRounded = Math.round(camROVert*100)/100;
+  document.querySelector("#CamROVertReadingOutput").innerText = camROVertRounded;
+
+  let cosCamROVert = Math.cos(camROVert);
+  let cosCamROVertRounded = Math.round(cosCamROVert*100)/100;
+  document.querySelector("#CosCamROVertReadingOutput").innerText = cosCamROVertRounded;
+
   //dealing with camHats output
+
+  let camHatsLengths = camHatLengthOutputter();
 
   let camIHatXRounded = Math.round(camIHat[0] * 100)/100;
   let camIHatYRounded = Math.round(camIHat[1]* 100)/100;
   let camIHatZRounded = Math.round(camIHat[2]*100)/100;
-  document.querySelector("#CamIHatOutput").innerText = (camIHatXRounded + ", " + camIHatYRounded + ", " + camIHatZRounded);
+  document.querySelector("#CamIHatOutput").innerText = (camIHatXRounded + ", " + camIHatYRounded + ", " + camIHatZRounded + " l:: " + camHatsLengths[0]);
 
   let camJHatXRounded = Math.round(camJHat[0] * 100)/100;
   let camJHatYRounded = Math.round(camJHat[1]* 100)/100;
   let camJHatZRounded = Math.round(camJHat[2]*100)/100;
-  document.querySelector("#CamJHatOutput").innerText = (camJHatXRounded + ", " + camJHatYRounded + ", " + camJHatZRounded);
+  document.querySelector("#CamJHatOutput").innerText = (camJHatXRounded + ", " + camJHatYRounded + ", " + camJHatZRounded + " l:: " + camHatsLengths[1]);
 
 
   let camKHatXRounded = Math.round(camKHat[0] * 100)/100;
   let camKHatYRounded = Math.round(camKHat[1]* 100)/100;
   let camKHatZRounded = Math.round(camKHat[2]*100)/100;
-  document.querySelector("#CamKHatOutput").innerText = (camKHatXRounded + ", " + camKHatYRounded + ", " + camKHatZRounded);
+  document.querySelector("#CamKHatOutput").innerText = (camKHatXRounded + ", " + camKHatYRounded + ", " + camKHatZRounded + " l:: " + camHatsLengths[2]);
 
   //dealing with worldHats output
   let worldIHatXRounded = Math.round(worldIHat[0] * 100)/100;
@@ -1135,6 +2694,32 @@ function displayText(){
   let camScreenDVX = Math.round(camScreenDV[0]*100)/100;
   let camScreenDVY = Math.round(camScreenDV[1]*100)/100;
   document.querySelector("#CamScreenDVOutput").innerText = (camScreenDVX + ", " + camScreenDVY);
+
+
+  //dealing with camHats Lengths
+
+  //inner function will return 3 value array for the length of CamI^, CamJ^ and CamK^ in that order
+  function camHatLengthOutputter(){
+
+    let lengths = [];
+
+    //dealing with CamI^. Remember that you need to feature in displacements on ALL axis. Not just a 2D plane.
+    //Using Pythgorean theorem for all axis
+     let camIHatLengthSquared = Math.pow(camIHat[0], 2) + Math.pow(camIHat[1], 2) + Math.pow(camIHat[2], 2);
+     let camIHatLength = Math.sqrt(camIHatLengthSquared);
+
+    let camJHatLengthSquared = Math.pow(camJHat[0], 2) + Math.pow(camJHat[1], 2) + Math.pow(camJHat[2], 2);
+    let camJHatLength = Math.sqrt(camJHatLengthSquared);
+
+    let camKHatLengthSquared = Math.pow(camKHat[0], 2) + Math.pow(camKHat[1], 2) + Math.pow(camKHat[2], 2);
+    let camKHatLength = Math.sqrt(camKHatLengthSquared);
+
+    lengths[0] = camIHatLength;
+    lengths[1] = camJHatLength;
+    lengths[2] = camKHatLength;
+
+    return lengths;
+  }
 
 
 }
