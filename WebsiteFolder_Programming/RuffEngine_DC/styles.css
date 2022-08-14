@@ -1,3 +1,6 @@
+
+
+
 body{
 
   background-color: black;
@@ -9,34 +12,38 @@ body{
 
 #ProgramWrapper{
   border: 0.2vw solid orange;
+  margin-top:10px;
   padding: 0.5vh;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
+  
 }
 
 #ViewsPanel{
-  border: 3px dotted turquoise;
+  border: 3px dotted chocolate;
   display: flex;
   width:1040px;
   height: 400px;
   float: left;
   grid-column: span 2;
 
+
 }
 
 
 
 #TVDIV{
-  border: 2px solid purple;
+  border: 2px solid darkred;
   margin-left: 10px;
   margin-right: 10px;
   margin-top: 10px;
   margin-bottom: 10px;;
-  
+
+
 }
 
   #TVDIV h3{
-    border: 2px solid lawngreen;
+    border: 2px solid red;
     text-align: center;
     width: 150px;
     margin: auto;
@@ -52,7 +59,7 @@ body{
 
 
 #CAMVDIV{
-  border: 2px solid red;
+  border: 2px solid green;
   margin-left: 10px;
   margin-right: 10px;
   margin-top: 10px;
@@ -68,13 +75,13 @@ body{
 }
 
 #CamCanvas{
-  border: 2px solid yellow;
+  border: 2px solid green;
   margin: 10px;
 }
 
 
 #SVDIV{
-  border: 2px solid darkblue;
+  border: 2px solid orange;
   margin-left: 10px;
   margin-right: 10px;
   margin-top: 10px;
@@ -82,7 +89,7 @@ body{
 }
 
 #SVDIV h3 {
-  border: 2px solid lawngreen;
+  border: 2px solid orange;
   text-align: center;
   width: 150px;
   margin: auto;
@@ -90,7 +97,7 @@ body{
 }
 
 #SVCanvas{
-  border: 2px solid green;
+  border: 2px solid orange;
   margin: 10px;
 }
 
@@ -99,23 +106,39 @@ body{
 #camInfoStatsSection{
   border: 3px solid darkblue;
   margin: 2px;
-  margin-top: -2px;;
+  margin-top: -2px;
+  margin-left: 0px;
   padding: 3px;
   display: grid;
   grid-template-columns: 1fr 1fr;
 }
 
 
+/*Firefox specific styles*/
+@-moz-document url-prefix(){
+  #camInfoStatsSection{
+    border: 3px solid darkblue;
+    margin: 2px;
+    margin-top: -2px;
+    margin-left: 45px;
+    padding: 3px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+}
+
+
 
 #camStatsPanel {
   width: 200px;
-  border: 2px solid green;
+  border: 2px solid #ab0000;
   display: flex;
   flex-direction: column;
   padding: 2px;
   margin: 5px;
-  
-  
+
+
 }
 
 .camStatFlexRow{
@@ -136,10 +159,10 @@ body{
   padding: 2px;
   margin: auto;
   margin-top: 2px;
-  border: 2px solid red;
+  border: 2px solid #ab0000;
   display: flex;
   flex-direction: row;
- 
+
   font-size: 0.8em;
 
 }
@@ -147,25 +170,25 @@ body{
 #camHatsStatsPanel {
   display: flex;
   flex-direction: column;
-  border: 2px solid #141ab8;
+  border: 2px solid #1a23c4;
   width: 200px;
   margin-top: 5px;
   margin-right: 0px;
-  
+
 }
 
 .camHatStatsFlexRow {
 
   width: 190px;
   height: 50px;
-    
- 
+
+
   padding: 1px;
   margin: auto;
-  border: 2px solid #141ab8;
+  border: 2px solid #1a23c4;
   display: flex;
   flex-direction: row;
-  
+
   font-size: 0.8em;
 }
 
@@ -178,7 +201,7 @@ body{
 #worldHatsStatsPanel {
   display: flex;
   flex-direction: column;
-  border: 2px solid brown;
+  border: 2px solid #850066;
   width: 200px;
   float: right;
   margin-right: 5px;
@@ -187,23 +210,49 @@ body{
 }
 
 .worldHatStatsFlexRow {
-  
+
   width: 190px;
     height: 50px;
     padding: 1px;
     margin: auto;
-    border: 2px solid brown;
+    border: 2px solid #850066;
     display: flex;
     flex-direction: row;
-    
+
     font-size: 0.8em;
-    
+
 
 }
 
 
 .worldHatStatsFlexRow h3{
   margin-left: 5px;
+}
+
+
+#warningsPanel{
+  margin-top: 5px;
+    ;
+    height: 195px;
+    width: 190px;
+    background-color: #003300;
+
+}
+
+
+#warningsPanel section{
+  border: 2px solid grey;
+  margin-top: 12px;
+  margin-left: 10px;
+  height: 165px;
+  width: 160px;;
+  background-color: black;
+  color: lawngreen;
+  padding: 4px;
+}
+
+#warningsPanel section div{
+  font-size: 0.8em;
 }
 
 
@@ -237,7 +286,8 @@ body{
 
 #toggleFunctionsPanel section section{
   border: 2px dashed white;
-  
+
+
 }
 
 #toggleFunctionsPanel section section button{
@@ -250,13 +300,20 @@ body{
   color: yellow;
   border: 2px solid white;
 
-  
+
 }
 
 #toggleFunctionsPanel section section div{
-  border: 1px solid red;
+  border: 1px solid green;
+  margin-top: 20px;
   width: 10px;
+  height: 15px;
+
+
 }
+
+
+
 
 
 
@@ -294,17 +351,18 @@ body{
   border: 2px solid red;
   display: grid;
   grid-template-columns: 1fr 1fr;
- 
+
 }
 
 
 #messagesPanel{
 
-  border: 2px solid orange;
-  margin-left: -100px;
+  border: 3px solid orange;
+  margin-left: -155px;
   background-color: #000363;
-  width: 600px;
+  width: 645px;
   height: 300px;
+  padding: 10px;
 }
 
 
@@ -319,12 +377,16 @@ body{
 
 #SceneControlsDiv{
   border: 2px solid red;
+  background-color: #242424;
+  height: 250px;
+  padding: 10px;
 }
 
 
 #SceneControlsDiv section{
-  border: 2px solid yellow;
-  width: 100px;
+  border: 3px ridge orange;
+  background-color: black;
+  width: 108px;
   display: grid;
   grid-template-columns: 1fr 1fr;
   margin: 5px;
@@ -333,21 +395,21 @@ body{
 
 #SceneControlsDiv section button{
   border: 4px ridge grey;
- 
+  font-family: Monospace;
   color: yellow;
 }
 
 
 #joystickArea{
-  border: 2px solid purple;
+  border: 7px ridge grey;
   width: 150px;
   height: 180px;
   margin-left: 160px;
   margin-top: -103px;
 
   background:
-  repeating-linear-gradient(45deg, black, 
-  black 8px, darkred 5px, darkred 15px);
+  repeating-linear-gradient(45deg, black,
+  black 8px, darkorange 5px, darkorange 15px);
 }
 
 
@@ -371,7 +433,7 @@ body{
 
 
 #joystickActiveTextIndicator{
- 
+ color: black;
   text-align: center;
   border: 2px solid red;
   width: 110px;

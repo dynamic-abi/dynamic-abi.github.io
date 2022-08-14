@@ -1,3 +1,6 @@
+
+
+
 //global elements
 var pointsArr;
 
@@ -89,7 +92,7 @@ var projectionRaysTrianglesSVStrongToggleSwitch = false;
 
 var toggleSwitch_lens_CCToProjSpot = false;
 
-
+var sceneInitializedCheckSwitch = false;
 var joystickActiveSwitch = false;
 
 
@@ -187,6 +190,16 @@ function initializeScene(){
  // trianglesArr = createUnitCube(1, 1, 1);
 
 
+  sceneInitializedCheckSwitch = true;
+
+  //Now will turn on the indicator light
+  //document.getElementById("initializeSceneIndicatorLight").style.background = "radial-gradient(white 0%, pink 30%, red 70%)";
+  document.getElementById("initializeSceneIndicatorLight").style.background = "radial-gradient(#ff4f7b 10%, #ff4f7b 20%, red 70%)";
+  document.getElementById("initializeSceneIndicatorLight").style.boxShadow = "1px 1px 2px 2px red, -1px -1px 2px 2px red";
+
+  updateWarningsPanel();
+
+
 }
 
 //will take in an array of cubes and convert them into one stream of triangles (an array of triangles)
@@ -272,6 +285,8 @@ function render(){
 
   displayText();
 
+
+
 }
 
 
@@ -300,6 +315,8 @@ function renderTV(){
 
 
   displayText();
+
+
 
   /**
   drawCamROArcTV();
@@ -582,13 +599,46 @@ function toggleLens_CCToProjSpot(){
 
 
 //start of toggle switches
+
+function greenIndicatorOn(buttonId){
+  document.querySelector("#"+buttonId+" + div").style.background = "radial-gradient(#75ff93 20%, #47fc6e 30%, #19f749 70%)";
+  document.querySelector("#"+buttonId+" + div").style.boxShadow = "1px 1px 2px 1px #47fc6e, -1px -1px 2px 1px #47fc6e";
+  document.querySelector("#"+buttonId+" + div").style.border = "2px solid transparent";
+
+}
+
+function greenIndicatorOff(buttonId){
+  document.querySelector("#"+buttonId+" + div").style.background = "black";
+  document.querySelector("#"+buttonId+" + div").style.boxShadow = "none";
+  document.querySelector("#"+buttonId+" + div").style.border = "2px solid green";
+}
+
+function greenIndicatorObjVersion(obj){
+  obj.style.background = "radial-gradient(#75ff93 20%, #47fc6e 30%, #19f749 70%)";
+  obj.style.boxShadow = "1px 1px 2px 1px #47fc6e, -1px -1px 2px 1px #47fc6e";
+  obj.style.border = "2px solid transparent";
+}
+
+function greenIndicatorOffObjVersion(obj){
+  obj.style.background = "black";
+  obj.style.boxShadow = "none";
+  obj.style.border = "2px solid green";
+
+}
+
+
 function toggleProjectionRaysSVStrong(){
+
+  let target = document.querySelector("#toggleFunctionsPanel section section:nth-child(5) div");
+
   if(projectionRaysSVStrongToggleSwitch==false){
     projectionRaysSVStrongToggleSwitch = true;
+    greenIndicatorObjVersion(target);
   }
 
   else{
     projectionRaysSVStrongToggleSwitch = false;
+    greenIndicatorOffObjVersion(target);
   }
 
 }
@@ -597,21 +647,37 @@ function toggleProjectionRaysSVStrong(){
 function toggleProjectionRaysTV(){
   if(projectionRaysTVToggleSwitch==false) {
     projectionRaysTVToggleSwitch = true;
+
+    greenIndicatorOn("toggleProjectionRaysTVButton");
+
+
   }
 
   else{
     projectionRaysTVToggleSwitch = false;
+    greenIndicatorOff("toggleProjectionRaysTVButton");
   }
 }
 
 
 function toggleProjectionRaysTVStrong(){
+
+  let target = document.querySelector("#toggleFunctionsPanel section section:nth-child(4) div");
   if(projectionRaysTVStrongToggleSwitch==false){
+
     projectionRaysTVStrongToggleSwitch = true;
+
+
+    greenIndicatorObjVersion(target);
+
+
+
   }
 
   else{
     projectionRaysTVStrongToggleSwitch = false;
+    greenIndicatorOffObjVersion(target);
+
   }
 
 
@@ -620,6 +686,8 @@ function toggleProjectionRaysTVStrong(){
 
 
 function toggleProjectionRaysTrianglesTVStrong(){
+
+  let target = document.querySelector("#toggleFunctionsPanel section section:nth-child(4) div");
   if(projectionRaysTrianglesTVStrongToggleSwitch==false){
     projectionRaysTrianglesTVStrongToggleSwitch = true;
   }
@@ -1709,14 +1777,21 @@ function drawProjectionRaysSVStrong(){
 //START OF JOYSTICK FUNCTIONS
 function applyJoystick(event){
 
+  let jCan = document.getElementById("joystickCanvas");
+  let jctx = jCan.getContext('2d');
 
+  jctx.clearRect(0, 0, jCan.width, jCan.height);
 
+  document.getElementById("joystick").style.background = "radial-gradient(#ff4f7b 10%, #ff4f7b 20%, red 70%)";
+  //document.getElementById("joystick").style.boxShadow =  "1px 1px 2px 2px red, -1px -1px 2px 2px red";
 
   camRO = 0;
   camROVert = 0;
 
 
     var quadrantNum = checkQuadrant();
+
+    //drawMouseCrosshair();
 
   console.log("quadrantNum: " + quadrantNum );
 
@@ -1829,7 +1904,28 @@ function applyJoystick(event){
 
     }
 
+  //will draw a marker to indicate where the mouse is
+  function drawMouseCrosshair(){
+      let xPos = event.offsetX;
+      let yPos = event.offsetY;
 
+      jctx.beginPath();
+      jctx.strokeStyle = "brown";
+      jctx.lineWidth = 2;
+      jctx.moveTo(xPos-5, yPos);
+      jctx.lineTo(xPos+5, yPos);
+      jctx.stroke();
+
+      jctx.beginPath();
+      jctx.strokeStyle = "brown";
+      jctx.lineWidth = 2;
+      jctx.moveTo(xPos, yPos-5);
+      jctx.lineTo(xPos, yPos+5);
+      jctx.stroke();
+
+
+
+  }
 
 }
 
@@ -1843,14 +1939,25 @@ function activateJoystickActiveSwitch(){
 
   document.getElementById("joystickCanvas").addEventListener("mousemove", applyJoystick);
 
+  document.getElementById("joystick").addEventListener("mouseleave", function(){
+    document.getElementById("joystick").style.background = "black";
+
+  });
+
 
   if(joystickActiveSwitch==false){
     joystickActiveSwitch = true;
+    document.getElementById("joystickActivateButtonIndicatorLight").style.background =  "radial-gradient(#ff4f7b 10%, #ff4f7b 20%, red 70%)";
+    document.getElementById("joystickActivateButtonIndicatorLight").style.boxShadow = "1px 1px 2px 2px red, -1px -1px 2px 2px red";
+
+    document.getElementById("joystickActiveTextIndicator").style.color = "Lawngreen";
   }
 
   else{
     joystickActiveSwitch = false;
   }
+
+  updateWarningsPanel();
 
 }
 
@@ -2659,18 +2766,18 @@ function displayText(){
   let camIHatXRounded = Math.round(camIHat[0] * 100)/100;
   let camIHatYRounded = Math.round(camIHat[1]* 100)/100;
   let camIHatZRounded = Math.round(camIHat[2]*100)/100;
-  document.querySelector("#CamIHatOutput").innerText = (camIHatXRounded + ", " + camIHatYRounded + ", " + camIHatZRounded + " l:: " + camHatsLengths[0]);
+  document.querySelector("#CamIHatOutput").innerText = (camIHatXRounded + ", " + camIHatYRounded + ", " + camIHatZRounded);
 
   let camJHatXRounded = Math.round(camJHat[0] * 100)/100;
   let camJHatYRounded = Math.round(camJHat[1]* 100)/100;
   let camJHatZRounded = Math.round(camJHat[2]*100)/100;
-  document.querySelector("#CamJHatOutput").innerText = (camJHatXRounded + ", " + camJHatYRounded + ", " + camJHatZRounded + " l:: " + camHatsLengths[1]);
+  document.querySelector("#CamJHatOutput").innerText = (camJHatXRounded + ", " + camJHatYRounded + ", " + camJHatZRounded);
 
 
   let camKHatXRounded = Math.round(camKHat[0] * 100)/100;
   let camKHatYRounded = Math.round(camKHat[1]* 100)/100;
   let camKHatZRounded = Math.round(camKHat[2]*100)/100;
-  document.querySelector("#CamKHatOutput").innerText = (camKHatXRounded + ", " + camKHatYRounded + ", " + camKHatZRounded + " l:: " + camHatsLengths[2]);
+  document.querySelector("#CamKHatOutput").innerText = (camKHatXRounded + ", " + camKHatYRounded + ", " + camKHatZRounded);
 
   //dealing with worldHats output
   let worldIHatXRounded = Math.round(worldIHat[0] * 100)/100;
@@ -2724,5 +2831,64 @@ function displayText(){
 
 }
 
+
+function displayWarningPanelText(){
+
+  let contentArea = document.querySelector("#warningsPanel section");
+
+  if(sceneInitializedCheckSwitch==true){
+    contentArea.innerText = "Scene Initialized";
+  }
+
+  if(joystickActiveSwitch==true){
+    contentArea.innerText = "Joystick active";
+  }
+
+
+}
+
+
+//needs to be called in the intializeScene and activate joystick function. It will update the display based on this.
+function updateWarningsPanel(){
+
+  let target = document.querySelector("#warningsPanel section div");
+
+  let message1 = "";
+  let message2 = "";
+
+  let message1Color = "Green";
+  let message2Color = "Green";
+
+  if(sceneInitializedCheckSwitch==true){
+    message1 = "Scene Initialized";
+  }
+  else if(sceneInitializedCheckSwitch==false){
+    message1 = "Scene not initialized (Press 'Initialize Scene' button)";
+    message1Color = "Red";
+  }
+
+
+  if(joystickActiveSwitch==true){
+    message2 = "Joystick activated";
+  }
+
+  else if(joystickActiveSwitch==false){
+    message2 = "Joystick not activated (Press 'Activate Joystick' button)";
+    message2Color = "Red";
+  }
+
+
+  target.style.color = message1Color;
+  target.innerHTML = message1;
+
+  target.innerHTML = target.innerHTML + "<br>";
+
+  target.style.color = message2Color;
+  target.innerHTML = target.innerHTML + message2;
+
+
+
+
+}
 
 //END OF MAINTENENCE FUNCTIONS
