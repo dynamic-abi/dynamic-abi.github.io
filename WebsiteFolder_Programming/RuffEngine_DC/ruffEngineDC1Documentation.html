@@ -37,16 +37,20 @@
   <p>An array holding 3 decimal numbers. These are the coordinates of the center of the camera within the 3D space (X, Y and Z coordinates).</p>
 
   <h3>CamRO:</h3>
-  <p>An array holding 2 decimal numbers. This is the rotation orientation of the camera.
-     The first number tracks how much the camera has rotated horizontally(on the XZ plane) and
-     the second number tracks how much it has rotated vertically (on the ZY plane). The angles
-     are measured in radians. A CamRO reading of [0, 0] means that the camera is directly facing straight ahead.
+  <p>This is the horizontal rotation orientation of the camera.
+     It tracks how much the camera has rotated horizontally away from its identity position. Measured in radians.
    </p>
 
    <p>
-     A rightwards turn increments CamRO[0] and a leftwards turn decrements it. An upwards turns increments CamRO[1] and a downwards
-     turn decrements it.
-   </p>
+     A rightwards turn increments it and a leftwards turn decrements it.
+    </p> 
+
+<h3>CamROVert: </h3> 
+
+<p>
+This is the vertical rotation orientation of the camera. To do with pitch ups and pitch downs. An upwards turn increments it and a downwards turn decrements it.
+
+</p> 
 
 
 
