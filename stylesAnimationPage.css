@@ -10,67 +10,7 @@
 
 @media only screen and (max-width: 1100px){
 
-  .cgiWorkSection{
-
-    border: 2px dotted white;
-    align-items: center;
-
-    margin-left: 30px;
-    margin-right: 30px;
-
-    margin-top: 2%;
-
-  }
-
-  .cgiWorkSectionHeadingBox{
-
-    width: 60%;
-
-    font-family: Helvetica;
-
-    border: 2px solid green;
-    text-align: center;
-
-    background: repeating-linear-gradient(45deg, #e8e8e8, #e8e8e8 10px, #c40000 10px, #c40000 20px);
-    align-items: center;
-
-
-    display: block;
-    margin: auto;
-    margin-top: 10px;
-
-
-  }
-
-  .cgiWorkSection h2{
-    width: 80%;
-    font-family: Helvetica;
-    color: #00ff11;
-    border: 2px solid green;
-    text-align: center;
-    margin-left: 4vh;
-    background: black;
-  }
-
-
-  .cgiWorkSectionPictures{
-
-    display: flex;
-    flex-flow: column;
-    margin-left: 2vh;
-    margin-right: 2vh;
-
-
-  }
-
-
-
-  .cgiWorkSectionPictures img{
-    width: 100%;
-    margin: 1vh;
-    border: 0.2vh solid #7200ab;
-
-  }
+  
 
 
 
@@ -79,101 +19,268 @@
 
 @media only screen and (min-width: 1100px){
 
-  #CGIWorksWrapper{
+  #buzzLightyearSection{
+    margin-top: 5px;;
+    width: 47%;
+    margin-left: 10px;
+    margin-top: 10px;
     border: 2px solid blue;
-    margin: 50px;
-    background-image: url("images/space1.jpg");
+    float: left;
   }
 
-  .cgiWorkSection{
-
-
-    display: flex;
-
-    margin-left: 80px;
-    margin-right: 80px;
-
-    margin-top: 2%;
-    flex-direction: column;
-    align-items: center;
-
-
-    max-width: 100%;
-
-    padding-bottom: 1%;
-
+  #buzzLightyearSection_HeadingDiv{
+    border: 2px solid #7d026f;
+    width: 90%;
+    height: 65px;
+    margin: auto;
+    margin-bottom: 2px;
+    margin-top: 5px;
+    padding-bottom: 2px;
+    overflow: hidden;
+      
+    
   }
 
 
 
-  .cgiWorkSectionHeadingBox{
-
-    width: 60%;
-
-    font-family: Helvetica;
-
-    border: 2px solid green;
-
-    margin-left: 12vh;
-    background: repeating-linear-gradient(45deg, #e8e8e8, #e8e8e8 10px, #c40000 10px, #c40000 20px);
-    display: inline-block;
-    align-items: center;
-    margin-top: 1.5vh;
-    margin-bottom: 1.5vh;
-
-
+  #buzzLightyearSection_HeadingDiv_TitleDiv{
+    border: 2px solid purple;
+    width: 78%;
+    height: 65px;
+    background: repeating-linear-gradient(45deg, #e8e8e8, #e8e8e8 12px, #c40000 12px, #c40000 24px);
+    margin: auto;
+   
   }
 
-  .cgiWorkSection h2{
-    width: 88%;
-    font-family: Helvetica;
-    color: #00ff11;
-    border: 2px solid green;
+
+ #buzzLightyearSection_HeadingDiv_TitleDiv_h1Box{
+  border: 2px solid lawngreen;
+  background-color: black;;
+  width: 60%;;
+  height: 50px;
+  
+  margin-top: 5px;
+  margin-left: auto;
+  margin-right: auto;
+  
+ 
+ }
+
+  #buzzLightyearSection_HeadingDiv_TitleDiv_h1Box h1{
+    font-family: 'Courier New', Courier, monospace;
+    color: lawngreen;
+    margin-top: auto;
+    margin-bottom: auto;
+    padding-top: 10px;
     text-align: center;
-    margin-left: 4vh;
+ 
+    
+  }
+
+#buzzLightyearSection_HeadingDiv_LeftLightContainer{
+  border: 2px solid orange;
+  background-color: #292829;
+  float: left;
+  width: 10%;;
+  height: 98%;
+}
+
+#buzzLightyearSection_HeadingDiv_LeftLightContainer_Light{
+  width: 30%;;
+  height: 80%;
+  margin: auto;
+  margin-top: 4px;
+  background: radial-gradient(white, red);
+  border: 2px solid black;
+  border-radius: 10px 10px;
+  /*box-shadow: 2px 2px 2px red, -2px -2px 2px red;*/
+  animation: buzzLightyearRedLightAnim 3s linear none infinite reverse;
+}
+
+@keyframes buzzLightyearRedLightAnim {
+
+  0%{
+    background: radial-gradient(black, black);
+  }
+
+ 
+  
+
+   49%{
+      background: radial-gradient(black, black);
+    }
+
+  50%{
+    background: radial-gradient(#cc9393 10%, #c40000 80%);
+  }
+
+    52%{
+      background: radial-gradient(#fcb3b3 10%, #ff0000 80%);
+    }
+
+    
+
+    99%{
+      background: radial-gradient(#fcb3b3 10%, #ff0000 80%);
+    }
+  100%{
+    background: radial-gradient(#cc9393 10%, #c40000 80%);
+
+  }
+  
+}
+
+
+
+
+#buzzLightyearSection_HeadingDiv_RightLightContainer{
+  border: 2px solid orange;
+  float: right;
+  background-color: #292829;
+  width: 10%;
+    
+  height: 98%;
+}
+
+
+#buzzLightyearSection_HeadingDiv_RightLightContainer_Light{
+    width: 30%;
+    height: 80%;
+    margin: auto;
+    margin-top: 4px;
     background: black;
+    border: 2px solid black;
+    border-radius: 10px 10px;
+
+      animation: buzzLightyearGreenLightAnim 3s linear none infinite reverse;
+   
+
+}
+
+
+@keyframes buzzLightyearGreenLightAnim {
+
+  0%{
+    background: radial-gradient(#8feb97 10%, #00ba0f 80%);
   }
 
+  1%{
+      background: radial-gradient(#c4ffd3 10%, #00d111 80%);
+  }
+  
+
+
+  40%{
+    background: radial-gradient(#c4ffd3 10%, #00d111 80%);
+  }
+
+  45%{
+    background: radial-gradient(#8feb97 10%, #00ba0f 80%);
+  }
+  50%{
+    background: radial-gradient(black, black);
+  }
+
+}
 
 
 
-  .cgiWorkSectionPictures{
 
-    background-color: black;
+
+  .buzzLightyearSection_imageDiv{
+    border: 3px solid purple;
+    width: 98%;
+    margin: auto;
+    margin-top: 8px;
+    margin-bottom: 8px;
+   
+  }
+
+  .buzzLightyearSection_imageDiv img{
+    
+    width: 100%;
+   
+  }
+ 
+
+
+
+  /*AT ST Styles*/
+
+
+  #ATSTSection{
+    margin-top: 5px;
+    width: 50%;
+    margin-right: 10px;
+    margin-top: 10px;
     border: 2px solid red;
-    padding-right: 10px;
-    padding-left: 4px;
-    display: grid;
+    float: right;
+  }
 
+  #ATSTSection_HeadingDiv{
+    border: 2px solid #7d026f;
+    width: 90%;
+    height: 60px;
+    margin: auto;
+    margin-bottom: 5px;
+    margin-top: 5px;
+    padding-bottom: 2px;
+    overflow: hidden;
+  }
 
-    grid-template-columns: repeat(2, 80vh);
-    margin-left: 2vh;
-    margin-right: 2vh;
-    grid-gap: 2vh;
+  #ATSTSection_HeadingDiv_TitleDiv{
+    border: 2px solid purple;
+      width: 78%;
+      height: 65px;
+      background: black;
+      margin: auto;
+  }
+
+  #ATSTSection_HeadingDiv_TitleDiv_h1Box{
+    border: 2px solid lawngreen;
+      background-color: black;
+      
+      width: 60%;
+      
+      height: 50px;
+    
+      margin-top: 2.5px;
+      margin-left: auto;
+      margin-right: auto;
+
+  }
+
+  #ATSTSection_HeadingDiv_TitleDiv_h1Box h1{
+
+    font-family: 'Courier New', Courier, monospace;
+    color: red;
+    margin-top: auto;
+    margin-bottom: auto;
+    padding-top: 10px;
+    
+    text-align: center; 
 
 
   }
 
 
 
-  .cgiWorkSectionPictures img{
 
-    width: auto;
-    height: auto;
-
-    max-width: 100%;
-
-
-    max-height: 100%;
-
-    margin: 2px;
-
-
-
-    border: 0.2vh solid #7200ab;
-
-  }
-
+    .ATSTSection_imageDiv {
+      border: 3px solid purple;
+      width: 98%;
+      margin: auto;
+      margin-top: 8px;
+      margin-bottom: 8px;
+      overflow: hidden;
+  
+    }
+  
+    .ATSTSection_imageDiv img {
+  
+      width: 100%;
+  
+    }
 
 }
 
