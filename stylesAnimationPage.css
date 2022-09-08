@@ -115,13 +115,13 @@
   }
 
     52%{
-      background: radial-gradient(#fcb3b3 10%, #ff0000 80%);
+      background: radial-gradient(#fc7ca6 10%, #ff0000 80%);
     }
 
     
 
     99%{
-      background: radial-gradient(#fcb3b3 10%, #ff0000 80%);
+      background: radial-gradient(#fc7ca6 10%, #ff0000 80%);
     }
   100%{
     background: radial-gradient(#cc9393 10%, #c40000 80%);
@@ -151,6 +151,7 @@
     background: black;
     border: 2px solid black;
     border-radius: 10px 10px;
+    opacity: 100%;
 
       animation: buzzLightyearGreenLightAnim 3s linear none infinite reverse;
    
@@ -161,24 +162,36 @@
 @keyframes buzzLightyearGreenLightAnim {
 
   0%{
-    background: radial-gradient(#8feb97 10%, #00ba0f 80%);
+   /* background: radial-gradient(#8feb97 10%, #00ba0f 80%);*/
+    background: black;
+    opacity: 0%;
   }
 
-  1%{
-      background: radial-gradient(#c4ffd3 10%, #00d111 80%);
+  3%{
+      background: radial-gradient(#c4ffd3 10%, #00b006 80%);
+      opacity: 100%;
   }
   
 
 
   40%{
-    background: radial-gradient(#c4ffd3 10%, #00d111 80%);
+    background: radial-gradient(#c4ffd3 10%, #00b006 80%);
+    opacity: 100%;
   }
 
   45%{
-    background: radial-gradient(#8feb97 10%, #00ba0f 80%);
+   background: radial-gradient(#c4ffd3 10%, #00b006 80%);
+    
   }
+
+  48%{
+    background: radial-gradient(#c4ffd3 10%, #00b006 80%);
+  }
+
+  
   50%{
     background: radial-gradient(black, black);
+    opacity: 100%;
   }
 
 }
@@ -218,7 +231,8 @@
   }
 
   #ATSTSection_HeadingDiv{
-    border: 2px solid #7d026f;
+    border: 2px solid slategrey;
+    background-color: slategrey;
     width: 90%;
     height: 60px;
     margin: auto;
@@ -237,8 +251,8 @@
   }
 
   #ATSTSection_HeadingDiv_TitleDiv_h1Box{
-    border: 2px solid lawngreen;
-      background-color: black;
+    border: 2px solid red;
+      background-color: #3b3b3b;
       
       width: 60%;
       
@@ -275,12 +289,246 @@
       overflow: hidden;
   
     }
-  
+
     .ATSTSection_imageDiv img {
-  
       width: 100%;
+    }
+
+
+
+
+    #FunnyFifteenMovieSection{
+      border: 2px solid orange;
+      float: left;
+      width: 47%;
+      margin-left: 10px;
+      background-color: #703002;
+    }
+
+
+    #FunnyFifteenMovieSection_TitleDiv{
+      border: 4px ridge brown;
+      width: 97%;
+      display: block;
+      margin: auto;
+     /* background-color: #deb83c; */
+      background: radial-gradient(#e0c646, #edd661);
+    }
+
+    #FunnyFifteenMovieSection_TitleDiv_TextDiv{
+      border: 2px solid black;
+      margin: 5px;
+    }
+
+    #FunnyFifteenMovieSection_TitleDiv_TextDiv h1{
+      color: black;
+      text-align: center;
+      font-family: Georgia, 'Times New Roman', Times, serif;
+      
+    }
+
+    #FunnyFifteenMovieSection_TitleDiv_TextDiv p{
+     
+      font-family: Georgia, 'Times New Roman', Times, serif;
+      color: black;
+      margin: 10px;
+      font-size: 0.9em;
+      
+    }
+
+
+
+
+    #FunnyFifteenMovieSection_VideoDiv{
+     
+    /*  background: radial-gradient(#a64500, #823701);*/
+      background-color: #703002;
+      width: 97%;
+      display: block;
+      margin: auto;
+    }
+
+    #FunnyFifteenMovieSection_VideoDiv video{
+      width: inherit;
+      border: 7px groove brown;
+      display: block;
+      margin: auto;
+    }
+
+
+
+
+
+
+
+    #FiveSevenHandgunSection{
+      margin-top: 5px;
+        width: 50%;
+        margin-right: 10px;
+        margin-top: 10px;
+        border: 2px solid red;
+        float: right;
+    }
+
+    #FiveSevenHandgunSection_HeadingDiv{
+      border: 2px solid slategrey;
+        background-color: #005903;
+        width: 90%;
+        height: 60px;
+        margin: auto;
+        margin-bottom: 5px;
+        margin-top: 5px;
+        padding-bottom: 2px;
+        overflow: hidden;
+
+    }
+
+        #FiveSevenHandgunSection_HeadingDiv_TitleDiv {
+          border: 2px solid purple;
+          width: 78%;
+          height: 65px;
+          background: black;
+          margin: auto;
+        }
+
+
+        
+
+
+        
+
+        
+
+
+
+        #FiveSevenHandgunSection_HeadingDiv_TitleDiv_h1Box {
+          border: 2px solid red;
+          background-color: #0e5701;
+          
+        
+          width: 60%;
+        
+          height: 50px;
+        
+          margin-top: 2.5px;
+          margin-left: auto;
+          margin-right: auto;
+        
+          }
+
+
+
+    #FiveSevenHandgunSection_HeadingDiv_TitleDiv_h1Box h1 {
+      
+      font-family: 'Courier New', Courier, monospace;
+      color: #ffda85;
+      margin-top: auto;
+      margin-bottom: auto;
+      padding-top: 10px;
+      
+      text-align: center;
+      
+      
+      }
+
+
+    .FiveSevenHandgunSection_imageDiv {
+      border: 3px solid purple;
+      width: 98%;
+      margin: auto;
+      margin-top: 8px;
+      margin-bottom: 8px;
+      overflow: hidden;
   
     }
+  
+    .FiveSevenHandgunSection_imageDiv img {
+      width: 100%;
+    }
+
+
+
+    #F22Section{
+      margin-top: 5px;
+        ;
+        width: 47%;
+        margin-left: 10px;
+        margin-top: 10px;
+        border: 2px solid blue;
+        float: left;
+
+
+    }
+
+
+        #F22Section_HeadingDiv {
+          border: 2px solid #7d026f;
+          background-color: slategray;
+          width: 90%;
+          height: 65px;
+          margin: auto;
+          margin-bottom: 2px;
+          margin-top: 5px;
+          padding-bottom: 2px;
+          overflow: hidden;
+    
+    
+        }
+    
+    
+    
+        #F22Section_HeadingDiv_TitleDiv {
+          border: 2px solid purple;
+          width: 78%;
+          height: 65px;
+          background-color: black;
+          margin: auto;
+    
+        }
+    
+    
+        #F22Section_HeadingDiv_TitleDiv_h1Box {
+          border: 2px solid lawngreen;
+          background-color: black;
+          ;
+          width: 60%;
+          ;
+          height: 50px;
+    
+          margin-top: 5px;
+          margin-left: auto;
+          margin-right: auto;
+    
+    
+        }
+    
+        #F22Section_HeadingDiv_TitleDiv_h1Box h1 {
+          font-family: 'Courier New', Courier, monospace;
+          color: lawngreen;
+          margin-top: auto;
+          margin-bottom: auto;
+          padding-top: 10px;
+          text-align: center;
+    
+    
+        }
+
+
+        .F22Section_imageDiv{
+          border: 3px solid purple;
+            width: 98%;
+            margin: auto;
+            margin-top: 8px;
+            margin-bottom: 8px;
+
+        }
+
+
+        .F22Section_imageDiv img{
+          width: 100%;;
+        }
+
+
 
 }
 
